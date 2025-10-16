@@ -3,7 +3,7 @@ package request
 case class CandlesDownloadRequest(
     currencyPair: CurrencyPair,
     granularity: Granularity,
-    pricingComponent: PricingComponent,
+    pricingComponents: Seq[PricingComponent],
     fromDate: String,
     toDate: String
 )
