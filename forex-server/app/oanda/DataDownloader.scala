@@ -47,7 +47,7 @@ object DataDownloader {
 
 @main
 def main(): Unit = {
-  println(DataDownloader.downloadCandles())
+//  println(DataDownloader.downloadCandles())
 }
 
 /*
