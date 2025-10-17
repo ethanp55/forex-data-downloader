@@ -1,8 +1,26 @@
 package request
 
+import play.api.libs.json._
+
 sealed trait PricingComponent
 
 object PricingComponent {
+  implicit val pricingComponentFormat: Format[PricingComponent] =
+    new Format[PricingComponent] {
+      def writes(o: PricingComponent): JsValue = o match {
+        case Bid => JsString("B")
+        case Mid => JsString("M")
+        case Ask => JsString("A")
+      }
+
+      def reads(json: JsValue): JsResult[PricingComponent] = json match {
+        case JsString("B") => JsSuccess(Bid)
+        case JsString("M") => JsSuccess(Mid)
+        case JsString("A") => JsSuccess(Ask)
+        case _             => JsError("Unknown PricingComponent")
+      }
+    }
+
   def combine(pricingComponents: Seq[PricingComponent]): String = {
     pricingComponents.map(_.toString).mkString("")
   }

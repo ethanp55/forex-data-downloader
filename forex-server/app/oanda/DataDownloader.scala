@@ -3,22 +3,13 @@ package oanda
 import sttp.client4.quick.*
 import sttp.client4.Request
 import play.api.libs.json.*
-import request.{
-  Ask,
-  Bid,
-  CandlesDownloadRequest,
-  EUR_USD,
-  M1,
-  Mid,
-  PricingComponent
-}
+import request.{CandlesDownloadRequest, PricingComponent}
 import sttp.model.StatusCode
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.time.{LocalDateTime, ZoneOffset}
-import java.util.concurrent.{ExecutorService, Executors, TimeoutException}
+import java.util.concurrent.{ExecutorService, Executors}
 import scala.annotation.tailrec
-import scala.concurrent.duration.*
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.boundary
 import scala.util.boundary.{Label, break}
 
@@ -39,7 +30,7 @@ object DataDownloader {
   // Oanda's API only sends a max of 5000 candles per request
   private val maxCandlesPerRequest: Int = 5000
   private val threadPool: ExecutorService = Executors.newFixedThreadPool(20)
-  private implicit val executionContext: ExecutionContext =
+  implicit val executionContext: ExecutionContext =
     ExecutionContext.fromExecutor(threadPool)
   private val waitTime: Int = 20
 
@@ -113,7 +104,7 @@ object DataDownloader {
 
   private def sendRequests(
       requests: Seq[Request[String]]
-  ): Either[Error, Seq[Candle]] = {
+  ): Future[Either[Error, Seq[Candle]]] = {
     @tailrec
     def _sendWithRetry(
         request: Request[String],
@@ -141,53 +132,34 @@ object DataDownloader {
         requests.map(request => Future(_sendWithRetry(request, nRetries)))
       )
 
-    try {
-      val results = Await.result(requestFutures, waitTime.seconds)
-      implicit val boundaryLabel: Label[Error] = new Label[Error]
+    implicit val boundaryLabel: Label[Error] = new Label[Error]
+    requestFutures.map { futureSequence =>
       val candleSequences: Either[Error, Seq[Candle]] = boundary {
-        val candles = results.collect {
+        val candles = futureSequence.collect {
           case Left(error)    => break(error)
           case Right(candles) => candles
         }
 
         Right(candles.flatten)
       }
-
       candleSequences
-    } catch {
-      case _: TimeoutException =>
-        Left(
-          OandaApiError(
-            s"Timeout to Oanda API with URI ${requests.head.uri}",
-            StatusCode.RequestTimeout.toString
-          )
-        )
     }
   }
 
   def downloadCandles(
       candlesDownloadRequest: CandlesDownloadRequest
-  ): Either[Error, Seq[Candle]] = {
+  ): Future[Either[Error, Seq[Candle]]] = {
     val requestsEither = createRequests(candlesDownloadRequest)
-    requestsEither.flatMap(sendRequests)
+    requestsEither match {
+      case Left(error)     => Future(Left(error))
+      case Right(requests) => sendRequests(requests)
+    }
   }
-}
-
-@main
-def main(): Unit = {
-  val request = CandlesDownloadRequest(
-    EUR_USD,
-    M1,
-    Seq(Ask, Bid, Mid),
-    "2024-01-01 00:00:00",
-    "2025-10-01 00:00:00"
-  )
-  println(DataDownloader.downloadCandles(request))
 }
 
 /*
  * TODO:
-  - Controller
-  - Unit tests
+  - Check the timeout handling on the controller
+  - Unit tests (might need to refactor code)
   - Controller tests
  * */
