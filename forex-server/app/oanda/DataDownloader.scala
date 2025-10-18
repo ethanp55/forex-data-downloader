@@ -7,7 +7,6 @@ import request.{CandlesDownloadRequest, PricingComponent}
 import sttp.model.StatusCode
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.time.{LocalDateTime, ZoneOffset}
-import java.util.concurrent.{ExecutorService, Executors}
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.boundary
@@ -29,9 +28,6 @@ object DataDownloader {
   )
   // Oanda's API only sends a max of 5000 candles per request
   private val maxCandlesPerRequest: Int = 5000
-  private val threadPool: ExecutorService = Executors.newFixedThreadPool(20)
-  implicit val executionContext: ExecutionContext =
-    ExecutionContext.fromExecutor(threadPool)
   private val waitTime: Int = 20
 
   private def dateTimeToUnix(localDateTime: LocalDateTime): String =
@@ -39,7 +35,7 @@ object DataDownloader {
 
   private def createRequests(
       candlesDownloadRequest: CandlesDownloadRequest
-  ): Either[Error, Seq[Request[String]]] = {
+  ): Either[ServerError, Seq[Request[String]]] = {
     try {
       val fromDate =
         LocalDateTime.parse(candlesDownloadRequest.fromDate, formatter)
@@ -95,7 +91,7 @@ object DataDownloader {
         val requestedToDate = candlesDownloadRequest.toDate
 
         Left(
-          DateTimeParseError(
+          DateTimeParseServerError(
             s"Could not convert $requestedFromDate and/or $requestedToDate to ${formatter.toString}"
           )
         )
@@ -104,12 +100,12 @@ object DataDownloader {
 
   private def sendRequests(
       requests: Seq[Request[String]]
-  ): Future[Either[Error, Seq[Candle]]] = {
+  )(implicit executionContext: ExecutionContext) = {
     @tailrec
     def _sendWithRetry(
         request: Request[String],
         numRetries: Int
-    ): Either[Error, Seq[Candle]] = {
+    ): Either[ServerError, Seq[Candle]] = {
       val response = request.send()
 
       response.code match {
@@ -123,7 +119,8 @@ object DataDownloader {
           Thread.sleep(nSecondsBetweenRetries * 1000)
           _sendWithRetry(request, numRetries - 1)
 
-        case _ => Left(OandaApiError(response.body, response.code.toString))
+        case _ =>
+          Left(OandaApiServerError(response.body, response.code.toString))
       }
     }
 
@@ -132,9 +129,9 @@ object DataDownloader {
         requests.map(request => Future(_sendWithRetry(request, nRetries)))
       )
 
-    implicit val boundaryLabel: Label[Error] = new Label[Error]
+    implicit val boundaryLabel: Label[ServerError] = new Label[ServerError]
     requestFutures.map { futureSequence =>
-      val candleSequences: Either[Error, Seq[Candle]] = boundary {
+      val candleSequences: Either[ServerError, Seq[Candle]] = boundary {
         val candles = futureSequence.collect {
           case Left(error)    => break(error)
           case Right(candles) => candles
@@ -142,13 +139,14 @@ object DataDownloader {
 
         Right(candles.flatten)
       }
+
       candleSequences
     }
   }
 
-  def downloadCandles(
-      candlesDownloadRequest: CandlesDownloadRequest
-  ): Future[Either[Error, Seq[Candle]]] = {
+  def downloadCandles(candlesDownloadRequest: CandlesDownloadRequest)(implicit
+      executionContext: ExecutionContext
+  ): Future[Either[ServerError, Seq[Candle]]] = {
     val requestsEither = createRequests(candlesDownloadRequest)
     requestsEither match {
       case Left(error)     => Future(Left(error))
@@ -159,7 +157,7 @@ object DataDownloader {
 
 /*
  * TODO:
-  - Check the timeout handling on the controller
   - Unit tests (might need to refactor code)
   - Controller tests
+  - Add documentation
  * */
