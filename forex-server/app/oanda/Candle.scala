@@ -1,7 +1,7 @@
 package oanda
 
 import play.api.libs.json.{JsObject, JsResult, JsValue, Json, OFormat}
-import java.time.{Instant, LocalDateTime, ZoneId}
+import java.time.{Instant, LocalDateTime, ZoneId, ZoneOffset}
 
 case class Candle(
     complete: Boolean,
@@ -14,14 +14,22 @@ case class Candle(
 
 object Candle {
   implicit val candleFormat: OFormat[Candle] = new OFormat[Candle] {
-    override def writes(o: Candle): JsObject = Json.obj(
-      "complete" -> o.complete,
-      "volume" -> o.volume,
-      "time" -> o.time,
-      "bid" -> o.bid,
-      "mid" -> o.mid,
-      "ask" -> o.ask
-    )
+    override def writes(o: Candle): JsObject = {
+      val baseJson = Json.obj(
+        "complete" -> o.complete,
+        "volume" -> o.volume,
+        "time" -> o.time.toEpochSecond(ZoneOffset.UTC).toString
+      )
+
+      val optionalFields = Seq(
+        o.bid.map(bid => Json.obj("bid" -> Price.priceFormat.writes(bid))),
+        o.mid.map(mid => Json.obj("mid" -> Price.priceFormat.writes(mid))),
+        o.ask.map(ask => Json.obj("ask" -> Price.priceFormat.writes(ask)))
+      ).flatten
+      val optionalJson = optionalFields.foldLeft(Json.obj())(_ ++ _)
+
+      baseJson ++ optionalJson
+    }
 
     def reads(json: JsValue): JsResult[Candle] = for {
       complete <- (json \ "complete").validate[Boolean]
@@ -42,10 +50,10 @@ case class Price(o: Float, h: Float, l: Float, c: Float)
 object Price {
   implicit val priceFormat: OFormat[Price] = new OFormat[Price] {
     override def writes(o: Price): JsObject = Json.obj(
-      "o" -> o.o,
-      "h" -> o.h,
-      "l" -> o.l,
-      "c" -> o.c
+      "o" -> o.o.toString,
+      "h" -> o.h.toString,
+      "l" -> o.l.toString,
+      "c" -> o.c.toString
     )
 
     override def reads(json: JsValue): JsResult[Price] = for {

@@ -128,7 +128,7 @@ class CandleDownloader @Inject() (backend: SyncBackend) {
           _sendWithRetry(request, numRetries - 1)
 
         case _ =>
-          Left(OandaApiServerError(response.body, response.code.toString))
+          Left(OandaApiServerError(response.body))
       }
     }
 

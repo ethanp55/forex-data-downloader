@@ -13,7 +13,6 @@ import oanda.{
 }
 import org.apache.pekko.actor.ActorSystem
 import play.api.libs.json.Json
-import sttp.model.StatusCode
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import org.apache.pekko.pattern.after
@@ -48,8 +47,7 @@ class CandleController @Inject() (
           )(Future {
             Left(
               OandaApiServerError(
-                s"Timeout to Oanda API call with request $candlesDownloadRequest",
-                StatusCode.RequestTimeout.toString
+                s"Timeout to Oanda API call with request $candlesDownloadRequest"
               )
             )
           })

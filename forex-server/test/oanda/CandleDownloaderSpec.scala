@@ -121,7 +121,6 @@ class CandleDownloaderSpec
         result.map {
           case Left(value: OandaApiServerError) =>
             value shouldBe a[OandaApiServerError]
-            value.statusCode shouldEqual "501"
             value.code shouldEqual "OANDA_API_ERROR"
           case Right(_) => fail("wah wah")
         }
