@@ -6,7 +6,7 @@ import play.api.mvc.*
 import _root_.request.CandlesDownloadRequest
 import oanda.{
   Candle,
-  DataDownloader,
+  CandleDownloader,
   OandaApiServerError,
   ServerError,
   UnknownServerError
@@ -21,7 +21,8 @@ import org.apache.pekko.pattern.after
 @Singleton
 class CandleController @Inject() (
     val controllerComponents: ControllerComponents,
-    actorSystem: ActorSystem
+    actorSystem: ActorSystem,
+    candleDownloader: CandleDownloader
 )(implicit
     ec: ExecutionContext
 ) extends BaseController {
@@ -37,7 +38,10 @@ class CandleController @Inject() (
         },
         candlesDownloadRequest => {
           val candlesFuture =
-            DataDownloader.downloadCandles(candlesDownloadRequest)
+            candleDownloader
+              .downloadCandles(candlesDownloadRequest)(actorSystem =
+                actorSystem
+              )
           val timeoutFuture = after(
             timeoutDuration,
             using = actorSystem.scheduler

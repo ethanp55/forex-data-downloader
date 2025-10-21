@@ -1,23 +1,28 @@
 package oanda
 
-import sttp.client4.quick.*
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.pattern.after
+import sttp.client4.SyncBackend
+import sttp.client4.quick.{UriContext, quickRequest}
 import sttp.client4.Request
 import play.api.libs.json.*
 import request.{CandlesDownloadRequest, PricingComponent}
 import sttp.model.StatusCode
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.time.{LocalDateTime, ZoneOffset}
+import javax.inject.*
 import scala.annotation.tailrec
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.boundary
-import scala.util.boundary.{Label, break}
 
-object DataDownloader {
+@Singleton
+class CandleDownloader @Inject() (backend: SyncBackend) {
   private val baseUrl: String =
     "https://api-fxpractice.oanda.com/v3/instruments"
   private val dateFormat: String = "UNIX"
   private val apiToken: String = Config.apiToken
-  private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+  private val timeFormat: String = "yyyy-MM-dd HH:mm:ss"
+  private val formatter = DateTimeFormatter.ofPattern(timeFormat)
   private val nRetries: Int = 3
   private val nSecondsBetweenRetries: Int = 1
   private val retryStatusCodes: Seq[StatusCode] = Seq(
@@ -30,10 +35,10 @@ object DataDownloader {
   private val maxCandlesPerRequest: Int = 5000
   private val waitTime: Int = 20
 
-  private def dateTimeToUnix(localDateTime: LocalDateTime): String =
+  final protected def dateTimeToUnix(localDateTime: LocalDateTime): String =
     localDateTime.toEpochSecond(ZoneOffset.UTC).toString
 
-  private def createRequests(
+  final protected def createRequests(
       candlesDownloadRequest: CandlesDownloadRequest
   ): Either[ServerError, Seq[Request[String]]] = {
     try {
@@ -69,8 +74,8 @@ object DataDownloader {
             candlesDownloadRequest.pricingComponents
           ),
           "granularity" -> candlesDownloadRequest.granularity.toString,
-          "from" -> DataDownloader.dateTimeToUnix(currFromTime),
-          "to" -> DataDownloader.dateTimeToUnix(currToTime)
+          "from" -> dateTimeToUnix(currFromTime),
+          "to" -> dateTimeToUnix(currToTime)
         )
 
         val uri =
@@ -92,21 +97,24 @@ object DataDownloader {
 
         Left(
           DateTimeParseServerError(
-            s"Could not convert $requestedFromDate and/or $requestedToDate to ${formatter.toString}"
+            s"Could not convert $requestedFromDate and/or $requestedToDate; expected format = $timeFormat"
           )
         )
     }
   }
 
-  private def sendRequests(
+  final protected def sendRequests(
       requests: Seq[Request[String]]
-  )(implicit executionContext: ExecutionContext) = {
+  )(implicit
+      executionContext: ExecutionContext,
+      actorSystem: ActorSystem
+  ): Future[Either[ServerError, Seq[Candle]]] = {
     @tailrec
     def _sendWithRetry(
         request: Request[String],
         numRetries: Int
     ): Either[ServerError, Seq[Candle]] = {
-      val response = request.send()
+      val response = request.send(backend)
 
       response.code match {
         case StatusCode.Ok =>
@@ -116,7 +124,7 @@ object DataDownloader {
           Right(candles)
 
         case x if retryStatusCodes.contains(x) && numRetries > 0 =>
-          Thread.sleep(nSecondsBetweenRetries * 1000)
+          after(nSecondsBetweenRetries.seconds, using = actorSystem.scheduler)
           _sendWithRetry(request, numRetries - 1)
 
         case _ =>
@@ -129,23 +137,24 @@ object DataDownloader {
         requests.map(request => Future(_sendWithRetry(request, nRetries)))
       )
 
-    implicit val boundaryLabel: Label[ServerError] = new Label[ServerError]
     requestFutures.map { futureSequence =>
-      val candleSequences: Either[ServerError, Seq[Candle]] = boundary {
-        val candles = futureSequence.collect {
-          case Left(error)    => break(error)
-          case Right(candles) => candles
-        }
-
-        Right(candles.flatten)
+      val errorOption = futureSequence.collectFirst { case Left(error) =>
+        error
       }
-
-      candleSequences
+      errorOption match {
+        case Some(error) => Left(error)
+        case None        =>
+          val allCandles = futureSequence.collect { case Right(candles) =>
+            candles
+          }.flatten
+          Right(allCandles)
+      }
     }
   }
 
   def downloadCandles(candlesDownloadRequest: CandlesDownloadRequest)(implicit
-      executionContext: ExecutionContext
+      executionContext: ExecutionContext,
+      actorSystem: ActorSystem
   ): Future[Either[ServerError, Seq[Candle]]] = {
     val requestsEither = createRequests(candlesDownloadRequest)
     requestsEither match {
@@ -154,10 +163,3 @@ object DataDownloader {
     }
   }
 }
-
-/*
- * TODO:
-  - Unit tests (might need to refactor code)
-  - Controller tests
-  - Add documentation
- * */
