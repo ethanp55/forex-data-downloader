@@ -6,7 +6,7 @@ import play.api.libs.json.*
 
 class ServerErrorSpec extends AnyFunSpec with Matchers {
   describe("DateTimeParseServerError") {
-    it("serialize and deserialize correctly") {
+    it("should serialize and deserialize correctly") {
       val error = DateTimeParseServerError("Invalid date format")
       val json = Json.toJson(error)
       val expectedJson = Json.obj(
@@ -15,12 +15,15 @@ class ServerErrorSpec extends AnyFunSpec with Matchers {
       )
 
       json shouldEqual expectedJson
-      Json.fromJson[DateTimeParseServerError](json) shouldBe JsSuccess(error)
+
+      val deserialized = json.validate[DateTimeParseServerError]
+      deserialized.isSuccess shouldBe true
+      deserialized.get shouldBe error
     }
   }
 
   describe("OandaApiServerError") {
-    it("serialize and deserialize correctly") {
+    it("should serialize and deserialize correctly") {
       val error = OandaApiServerError("API is down")
       val json = Json.toJson(error)
       val expectedJson = Json.obj(
@@ -29,7 +32,10 @@ class ServerErrorSpec extends AnyFunSpec with Matchers {
       )
 
       json shouldEqual expectedJson
-      Json.fromJson[OandaApiServerError](json) shouldBe JsSuccess(error)
+
+      val deserialized = json.validate[OandaApiServerError]
+      deserialized.isSuccess shouldBe true
+      deserialized.get shouldBe error
     }
   }
 
@@ -43,7 +49,10 @@ class ServerErrorSpec extends AnyFunSpec with Matchers {
       )
 
       json shouldEqual expectedJson
-      Json.fromJson[UnknownServerError](json) shouldBe JsSuccess(error)
+
+      val deserialized = json.validate[UnknownServerError]
+      deserialized.isSuccess shouldBe true
+      deserialized.get shouldBe error
     }
   }
 }

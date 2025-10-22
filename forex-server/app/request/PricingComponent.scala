@@ -22,7 +22,7 @@ object PricingComponent {
     }
 
   def combine(pricingComponents: Seq[PricingComponent]): String = {
-    pricingComponents.map(_.toString).mkString("")
+    pricingComponents.toSet.map(_.toString).mkString("")
   }
 }
 
