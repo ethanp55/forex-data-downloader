@@ -13,7 +13,7 @@ import oanda.{
 }
 import org.apache.pekko.actor.ActorSystem
 import play.api.libs.json.Json
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 import org.apache.pekko.pattern.after
 
@@ -26,7 +26,7 @@ class CandleController @Inject() (
     ec: ExecutionContext
 ) extends BaseController {
 
-  private val timeoutDuration = 20.seconds
+  protected val timeoutDuration: FiniteDuration = 20.seconds
 
   def downloadCandles() = Action.async(parse.json) { request =>
     request.body

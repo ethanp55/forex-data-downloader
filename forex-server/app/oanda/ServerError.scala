@@ -56,10 +56,9 @@ object DateTimeParseServerError {
     }
 }
 
-case class OandaApiServerError(
-    message: String,
-    code: String = "OANDA_API_ERROR"
-) extends ServerError
+case class OandaApiServerError(message: String) extends ServerError {
+  override val code = "OANDA_API_ERROR"
+}
 
 object OandaApiServerError {
   implicit val oandaApiServerErrorWrites: Writes[OandaApiServerError] =
@@ -82,8 +81,9 @@ object OandaApiServerError {
     }
 }
 
-case class UnknownServerError(message: String, code: String = "UNKNOWN_ERROR")
-    extends ServerError
+case class UnknownServerError(message: String) extends ServerError {
+  override val code = "UNKNOWN_ERROR"
+}
 
 object UnknownServerError {
   implicit val unknownServerErrorWrites: Writes[UnknownServerError] =
