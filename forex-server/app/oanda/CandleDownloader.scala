@@ -13,10 +13,12 @@ import java.time.{LocalDateTime, ZoneOffset}
 import javax.inject.*
 import scala.annotation.tailrec
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 @Singleton
-class CandleDownloader @Inject() (backend: SyncBackend) {
+class CandleDownloader @Inject() (backend: SyncBackend)(implicit
+    ec: OandaExecutionContext
+) {
   private val baseUrl: String =
     "https://api-fxpractice.oanda.com/v3/instruments"
   private val dateFormat: String = "UNIX"
@@ -106,7 +108,6 @@ class CandleDownloader @Inject() (backend: SyncBackend) {
   final protected def sendRequests(
       requests: Seq[Request[String]]
   )(implicit
-      executionContext: ExecutionContext,
       actorSystem: ActorSystem
   ): Future[Either[ServerError, Seq[Candle]]] = {
     @tailrec
@@ -153,7 +154,6 @@ class CandleDownloader @Inject() (backend: SyncBackend) {
   }
 
   def downloadCandles(candlesDownloadRequest: CandlesDownloadRequest)(implicit
-      executionContext: ExecutionContext,
       actorSystem: ActorSystem
   ): Future[Either[ServerError, Seq[Candle]]] = {
     val requestsEither = createRequests(candlesDownloadRequest)

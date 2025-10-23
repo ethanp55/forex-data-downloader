@@ -16,11 +16,11 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import request.{Bid, CandlesDownloadRequest, EUR_USD, H1}
 import sttp.client4.{Request, Response, SyncBackend}
-
 import scala.concurrent.{ExecutionContext, Future}
 
-class CandleDownloaderTest(backend: SyncBackend)
-    extends CandleDownloader(backend) {
+class CandleDownloaderTest(backend: SyncBackend)(implicit
+    ec: OandaExecutionContext
+) extends CandleDownloader(backend) {
   def dateTimeToUnixPublic(localDateTime: LocalDateTime): String =
     super.dateTimeToUnix(localDateTime)
 
@@ -41,6 +41,9 @@ class CandleDownloaderSpec
     extends AsyncFunSpec
     with Matchers
     with MockitoSugar {
+  private implicit val ec: OandaExecutionContext = OandaExecutionContext(
+    ActorSystem("test")
+  )
   private val mockBackend = mock[SyncBackend]
   private val mockRequest = mock[Request[String]]
   private val mockResponse = mock[Response[String]]

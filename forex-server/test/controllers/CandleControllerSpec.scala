@@ -90,7 +90,6 @@ class CandleControllerSpec extends AnyFunSpec with Matchers with MockitoSugar {
         // Set the expected response
         when(
           candleDownloaderMock.downloadCandles(any[CandlesDownloadRequest])(
-            any[ExecutionContext],
             any[ActorSystem]
           )
         )
@@ -121,7 +120,6 @@ class CandleControllerSpec extends AnyFunSpec with Matchers with MockitoSugar {
         // Set the candle downloader to take a long time to finish (60 seconds should be plenty large)
         when(
           candleDownloaderMock.downloadCandles(any[CandlesDownloadRequest])(
-            any[ExecutionContext],
             any[ActorSystem]
           )
         ).thenReturn(
@@ -156,7 +154,6 @@ class CandleControllerSpec extends AnyFunSpec with Matchers with MockitoSugar {
         // Set the candle downloader to return an error
         when(
           candleDownloaderMock.downloadCandles(any[CandlesDownloadRequest])(
-            any[ExecutionContext],
             any[ActorSystem]
           )
         )
