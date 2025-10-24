@@ -11,12 +11,14 @@ import oanda.{
   ServerError
 }
 import org.apache.pekko.actor.ActorSystem
+import org.mockito.invocation.InvocationOnMock
+import org.mockito.stubbing.Answer
 import org.scalatest.funspec.AsyncFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import request.{Bid, CandlesDownloadRequest, EUR_USD, H1}
 import sttp.client4.{Request, Response, SyncBackend}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class CandleDownloaderTest(backend: SyncBackend)(implicit
     ec: OandaExecutionContext
@@ -32,7 +34,6 @@ class CandleDownloaderTest(backend: SyncBackend)(implicit
   def sendRequestsPublic(
       requests: Seq[Request[String]]
   )(implicit
-      executionContext: ExecutionContext,
       actorSystem: ActorSystem
   ): Future[Either[ServerError, Seq[Candle]]] = super.sendRequests(requests)
 }
@@ -111,10 +112,59 @@ class CandleDownloaderSpec
     }
 
     describe("sendRequests") {
+      describe("should retry") {
+        val retryCodes = Seq(500, 502, 503, 504)
+        retryCodes.foreach { retryCode =>
+          it(s"if Oanda returns a $retryCode status code") {
+            // Mock the response to first fail (with a retry code) and then succeed the second time
+            var callCount = 1
+            when(mockResponse.code)
+              .thenAnswer((invocation: InvocationOnMock) => {
+                callCount += 1
+                503
+              })
+              .thenReturn(200)
+            val candleJson =
+              """{
+                |  "candles" : [ {
+                |    "complete" : true,
+                |    "volume" : 500,
+                |    "time" : "1761067220",
+                |    "bid" : {
+                |      "o" : "0.0075",
+                |      "h" : "1",
+                |      "l" : "0.005",
+                |      "c" : "0.0095"
+                |    }
+                |  }]
+                |}""".stripMargin
+            when(mockResponse.body).thenReturn(candleJson)
+            when(mockRequest.send(mockBackend)).thenReturn(mockResponse)
+
+            // Test case
+            val result =
+              candleDownloaderTest.sendRequestsPublic(Seq(mockRequest))
+
+            // Expected result(s) -- chose a few arbitrary candle parameters to check if everything is parsed correctly
+            result.map {
+              case Left(_)      => fail("wah wah")
+              case Right(value) =>
+                value should have length 1
+                val candle = value.head
+                candle.volume shouldEqual 500
+                candle.ask shouldBe None
+                candle.bid.get.h shouldEqual 1
+
+                // Make sure the retry was called
+                callCount shouldBe 2
+            }
+          }
+        }
+      }
+
       it("should return an error for non-retry API errors from Oanda") {
         // Mock an error (that doesn't cause the candle downloader to retry any requests to Oanda)
         when(mockRequest.send(mockBackend)).thenReturn(mockResponse)
-        when(mockBackend.send(mockRequest)).thenReturn(mockResponse)
         when(mockResponse.code).thenReturn(501)
 
         // Test case
@@ -125,14 +175,13 @@ class CandleDownloaderSpec
           case Left(value: OandaApiServerError) =>
             value shouldBe a[OandaApiServerError]
             value.code shouldEqual "OANDA_API_ERROR"
-          case Right(_) => fail("wah wah")
+          case _ => fail("wah wah")
         }
       }
 
       it("should download candles correctly for valid responses") {
         // Mock a successful response
         when(mockRequest.send(mockBackend)).thenReturn(mockResponse)
-        when(mockBackend.send(mockRequest)).thenReturn(mockResponse)
         when(mockResponse.code).thenReturn(200)
         val candleJson = """{
                                |  "candles" : [ {

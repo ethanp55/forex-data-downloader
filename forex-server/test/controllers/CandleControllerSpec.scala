@@ -8,7 +8,7 @@ import oanda.{
   UnknownServerError
 }
 import org.apache.pekko.actor.ActorSystem
-import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.funspec.AsyncFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.{JsString, JsValue, Json}
@@ -22,7 +22,10 @@ import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 import org.apache.pekko.pattern.{after => PekkoAfter}
 
-class CandleControllerSpec extends AnyFunSpec with Matchers with MockitoSugar {
+class CandleControllerSpec
+    extends AsyncFunSpec
+    with Matchers
+    with MockitoSugar {
   private implicit val actorSystemMock: ActorSystem = ActorSystem("test")
   private implicit val ec: ExecutionContext = actorSystemMock.getDispatcher
   private val candleDownloaderMock = mock[CandleDownloader]
