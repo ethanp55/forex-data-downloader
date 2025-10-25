@@ -2,8 +2,12 @@ package request
 
 import play.api.libs.json._
 
+/** Sealed trait for defining CurrencyPair enums.
+  */
 sealed trait CurrencyPair
 
+/** Companion CurrencyPair object used for defining JSON functionality.
+  */
 object CurrencyPair {
   implicit val currencyPairFormat: Format[CurrencyPair] =
     new Format[CurrencyPair] {
@@ -56,7 +60,8 @@ object CurrencyPair {
     }
 }
 
-// Major pairs
+/** Case objects that represent the major currency pairs.
+  */
 case object EUR_USD extends CurrencyPair
 case object USD_JPY extends CurrencyPair
 case object GBP_USD extends CurrencyPair
@@ -65,7 +70,8 @@ case object AUD_USD extends CurrencyPair
 case object USD_CHF extends CurrencyPair
 case object NZD_USD extends CurrencyPair
 
-// Popular minor pairs
+/** Case objects that represent some of the minor currency pairs.
+  */
 case object EUR_GBP extends CurrencyPair
 case object EUR_JPY extends CurrencyPair
 case object GBP_JPY extends CurrencyPair

@@ -2,11 +2,16 @@ package oanda
 
 import play.api.libs.json.{JsError, JsValue, Json, Reads, Writes}
 
+/** Simple trait for defining custom errors to send back to the user (to help
+  * clarify what, if anything, went wrong).
+  */
 sealed trait ServerError {
   val code: String
   val message: String
 }
 
+/** Companion ServerError object used for defining JSON functionality.
+  */
 object ServerError {
   implicit val serverErrorWrites: Writes[ServerError] =
     (error: ServerError) =>
@@ -30,10 +35,18 @@ object ServerError {
     }
 }
 
+/** Case class that implements the ServerError trait. Used for sending error
+  * messages if any time conversions to UNIX fail.
+  * @param message
+  *   Custom error message to help indicate what went wrong.
+  */
 case class DateTimeParseServerError(message: String) extends ServerError {
   override val code = "INVALID_DATE_STRING"
 }
 
+/** Companion DateTimeParseServerError object used for defining JSON
+  * functionality.
+  */
 object DateTimeParseServerError {
   implicit val dateTimeParseServerErrorWrites
       : Writes[DateTimeParseServerError] =
@@ -56,10 +69,17 @@ object DateTimeParseServerError {
     }
 }
 
+/** Case class that implements the ServerError trait. Used for sending error
+  * messages if any requests to Oanda error out.
+  * @param message
+  *   Custom error message to help indicate what went wrong.
+  */
 case class OandaApiServerError(message: String) extends ServerError {
   override val code = "OANDA_API_ERROR"
 }
 
+/** Companion OandaApiServerError object used for defining JSON functionality.
+  */
 object OandaApiServerError {
   implicit val oandaApiServerErrorWrites: Writes[OandaApiServerError] =
     (error: OandaApiServerError) =>
@@ -81,10 +101,17 @@ object OandaApiServerError {
     }
 }
 
+/** Case class that implements the ServerError trait. Used for sending error
+  * messages if any strange/unknown errors occur.
+  * @param message
+  *   Custom error message to help indicate what went wrong.
+  */
 case class UnknownServerError(message: String) extends ServerError {
   override val code = "UNKNOWN_ERROR"
 }
 
+/** Companion UnknownServerError object used for defining JSON functionality.
+  */
 object UnknownServerError {
   implicit val unknownServerErrorWrites: Writes[UnknownServerError] =
     (error: UnknownServerError) =>

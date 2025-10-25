@@ -15,6 +15,16 @@ import scala.annotation.tailrec
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.Future
 
+/** Helper class for making GET requests to Oanda (for downloading historical
+  * data). The @Singleton decorator is used because this class does not track
+  * any internal state, so we only need one instance.
+  *
+  * @param backend
+  *   SyncBackend from the sttp library for sending HTTP requests.
+  * @param ec
+  *   Custom OandaExecutionContext used for sending requests to Oanda with a
+  *   specific thread pool (to prevent blocking in the CandleController).
+  */
 @Singleton
 class CandleDownloader @Inject() (backend: SyncBackend)(implicit
     ec: OandaExecutionContext
@@ -37,9 +47,31 @@ class CandleDownloader @Inject() (backend: SyncBackend)(implicit
   private val maxCandlesPerRequest: Int = 5000
   private val waitTime: Int = 20
 
+  /** Helper function that converts LocalDateTime objects to UNIX (Oanda expects
+    * times to be in UNIX format).
+    *
+    * @param localDateTime
+    *   Datetime object to convert to UNIX.
+    * @return
+    *   A string representing a datetime object in UNIX format.
+    */
   final protected def dateTimeToUnix(localDateTime: LocalDateTime): String =
     localDateTime.toEpochSecond(ZoneOffset.UTC).toString
 
+  /** Helper function that converts a CandlesDownloadRequest to a sequence of
+    * sttp Request objects. A sequence is needed because Oanda can only return a
+    * max of 5000 candles, so multiple requests might need to be sent to Oanda
+    * to retrieve candles for the full date range.
+    *
+    * @param candlesDownloadRequest
+    *   A custom CandlesDownloadRequest object that stores information about
+    *   which currency pair, granularity, date range, etc. to download data for.
+    * @return
+    *   An Either object. If the from and to dates in the request cannot be
+    *   converted to UNIX, a Left with an error (indicating the issue) is
+    *   returned. Otherwise, a Right with a sequence of sttp requests is
+    *   returned.
+    */
   final protected def createRequests(
       candlesDownloadRequest: CandlesDownloadRequest
   ): Either[ServerError, Seq[Request[String]]] = {
@@ -105,6 +137,23 @@ class CandleDownloader @Inject() (backend: SyncBackend)(implicit
     }
   }
 
+  /** Function that sends sttp Request objects to Oanda for downloading
+    * historical candle data.
+    *
+    * @param requests
+    *   Sequence of sttp requests to send to Oanda.
+    * @param actorSystem
+    *   Pekko ActorSystem used to create a small delay before retrying a failed
+    *   request to Oanda (if Oanda returns a vague error, this function will
+    *   wait temporarily and attempt to send the request again).
+    * @return
+    *   A Future containing an Either. A Future is used because we do not want
+    *   the code to block while it waits for Oanda to return the requested
+    *   results. If any errors occur, a Left is returned with the first detected
+    *   error. If everything succeeds, a Right is returned with a sequence of
+    *   Candle objects (the candles corresponding to what was requested by the
+    *   user).
+    */
   final protected def sendRequests(
       requests: Seq[Request[String]]
   )(implicit
@@ -153,6 +202,25 @@ class CandleDownloader @Inject() (backend: SyncBackend)(implicit
     }
   }
 
+  /** The main public facing function for requesting historical candle data.
+    * This function first creates a sequence of sttp Request objects and then
+    * sends them to Oanda.
+    *
+    * @param candlesDownloadRequest
+    *   A custom CandlesDownloadRequest object that stores information about
+    *   which currency pair, granularity, date range, etc. to download data for.
+    * @param actorSystem
+    *   Pekko ActorSystem used to create a small delay before retrying a failed
+    *   request to Oanda (if Oanda returns a vague error, this function will
+    *   wait temporarily and attempt to send the request again).
+    * @return
+    *   A Future containing an Either. A Future is used because we do not want
+    *   the code to block while it waits for Oanda to return the requested
+    *   results. If any errors occur, a Left is returned with the first detected
+    *   error. If everything succeeds, a Right is returned with a sequence of
+    *   Candle objects (the candles corresponding to what was requested by the
+    *   user).
+    */
   def downloadCandles(candlesDownloadRequest: CandlesDownloadRequest)(implicit
       actorSystem: ActorSystem
   ): Future[Either[ServerError, Seq[Candle]]] = {

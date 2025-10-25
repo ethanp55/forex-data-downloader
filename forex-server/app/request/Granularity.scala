@@ -2,10 +2,14 @@ package request
 
 import play.api.libs.json._
 
+/** Sealed trait for defining Granularity enums.
+  */
 sealed trait Granularity {
   def toMinutes: Int
 }
 
+/** Companion Granularity object used for defining JSON functionality.
+  */
 object Granularity {
   implicit val granularityFormat: Format[Granularity] =
     new Format[Granularity] {
@@ -52,6 +56,8 @@ object Granularity {
     }
 }
 
+/** Case objects for the various time frame granularities users can request.
+  */
 case object M1 extends Granularity {
   override def toMinutes: Int = 1
 }

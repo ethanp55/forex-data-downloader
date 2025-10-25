@@ -3,6 +3,25 @@ package oanda
 import play.api.libs.json.{JsObject, JsResult, JsValue, Json, OFormat}
 import java.time.{Instant, LocalDateTime, ZoneId, ZoneOffset}
 
+/** Case class used to store candle data returned from Oanda.
+  *
+  * @param complete
+  *   Represents whether the candle is finished. Since we are downloading
+  *   historical data, this will always be true.
+  * @param volume
+  *   Candle volume.
+  * @param time
+  *   LocalDateTime that represents when the candle finished.
+  * @param bid
+  *   Information about the bid price (a custom Price case class is used--see
+  *   below).
+  * @param mid
+  *   Information about the mid price (a custom Price case class is used--see
+  *   below).
+  * @param ask
+  *   Information about the ask price (a custom Price case class is used--see
+  *   below).
+  */
 case class Candle(
     complete: Boolean,
     volume: Int,
@@ -12,6 +31,8 @@ case class Candle(
     ask: Option[Price]
 )
 
+/** Companion Candle object used for defining JSON functionality.
+  */
 object Candle {
   implicit val candleFormat: OFormat[Candle] = new OFormat[Candle] {
     override def writes(o: Candle): JsObject = {
@@ -45,8 +66,22 @@ object Candle {
   }
 }
 
+/** Case class used to store price information. For bid, mid, and ask prices,
+  * each one contains information about the open, high, low, and close for a
+  * candle.
+  * @param o
+  *   Open price.
+  * @param h
+  *   High price.
+  * @param l
+  *   Low price.
+  * @param c
+  *   Close price.
+  */
 case class Price(o: Float, h: Float, l: Float, c: Float)
 
+/** Companion Price object used for defining JSON functionality.
+  */
 object Price {
   implicit val priceFormat: OFormat[Price] = new OFormat[Price] {
     override def writes(o: Price): JsObject = Json.obj(

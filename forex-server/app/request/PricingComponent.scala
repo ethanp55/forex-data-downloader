@@ -2,8 +2,12 @@ package request
 
 import play.api.libs.json._
 
+/** Sealed trait for defining PricingComponent enums.
+  */
 sealed trait PricingComponent
 
+/** Companion PricingComponent object used for defining JSON functionality.
+  */
 object PricingComponent {
   implicit val pricingComponentFormat: Format[PricingComponent] =
     new Format[PricingComponent] {
@@ -26,8 +30,11 @@ object PricingComponent {
   }
 }
 
-// Chose to override toString instead of naming each B, M, and A, respectively, because the case object M is already
-// defined in Granularity.scala, plus Bid, Mid, and Ask are more understandable names
+/** Case objects for the different prices users can request. Note that toString
+  * is overridden instead of naming each B, M, and A, respectively, because the
+  * case object M is already defined in Granularity.scala, plus Bid, Mid, and
+  * Ask are more understandable/intuitive names.
+  */
 case object Bid extends PricingComponent {
   override def toString: String = "B"
 }
