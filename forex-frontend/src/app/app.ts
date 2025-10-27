@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
@@ -8,5 +8,6 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('forex-frontend');
+  readonly githubUrl = "https://github.com/ethanp55/forex-data-downloader";
+  readonly oandaUrl = "https://developer.oanda.com/rest-live-v20/instrument-ep/";
 }

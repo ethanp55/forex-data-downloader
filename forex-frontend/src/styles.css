@@ -1,1 +1,46 @@
-/* You can add global styles to this file, and also import other style files */
+body {
+    background-color: #121212;  /* Dark background */
+    color: #e0e0e0;  /* Light gray text */
+    font-family: 'Arial', sans-serif;  /* Modern font */
+    margin: 15px;
+    padding: 0;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;  /* Padding around the header */
+}
+
+h1 {
+    font-size: 24px;  /* Font size for the header */
+}
+
+.main {
+    text-align: center;  /* Centered text */
+    padding: 40px;  /* Padding around the main content */
+}
+
+.buttons {
+    display: flex;
+    gap: 15px;  /* Spacing between buttons */
+}
+
+.btn {
+    background-color: #2e7d32;  /* Green background */
+    color: white;  /* White text */
+    padding: 10px 20px;  /* Button padding */
+    text-decoration: none;  /* No underline */
+    border-radius: 5px;  /* Rounded corners */
+    transition: background-color 0.3s;  /* Smooth background transition */
+}
+
+.btn:hover {
+    background-color: #1b5e20;  /* Darker green on hover */
+}
+
+.link {
+    text-decoration: none;
+    color: aquamarine;
+}
