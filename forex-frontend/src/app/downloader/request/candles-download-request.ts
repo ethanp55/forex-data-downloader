@@ -1,6 +1,6 @@
-import { CurrencyPair } from "./currency-pair";
-import { Granularity } from "./granularity";
-import { PricingComponent } from "./pricing-component";
+import { CurrencyPair } from "./currency-pair.enums";
+import { Granularity } from "./granularity.enums";
+import { PricingComponent } from "./pricing-component.enums";
 
 export class CandlesDownloadRequest {
   constructor(

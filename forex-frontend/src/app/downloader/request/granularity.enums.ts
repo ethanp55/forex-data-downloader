@@ -15,5 +15,5 @@ export enum Granularity {
   H12 = "H12",
   D   = "D",
   W   = "W",
-  M   = "M"
+  Month = "M"
 }

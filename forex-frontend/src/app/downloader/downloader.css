@@ -1,0 +1,59 @@
+.options {
+    margin: 5rem;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+label {
+  font-size: 16px;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 1rem;
+  margin-right: 0.5rem;
+}
+
+select {
+  background-color: #2D7D2C;
+  color: white;
+  border: 1px solid #1A5A1A;
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 16px;
+  cursor: pointer; 
+}
+
+.currency-pair-options-container {
+    display: flex;
+    align-items: baseline;
+}
+
+.granularity-options-container {
+    display: flex;
+    align-items: baseline;
+}
+
+.granularity-tooltip {
+    position: relative;
+    /* top: 1rem; */
+    left: 12rem;
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+    margin-bottom: 0.75rem;
+    gap: 10px;
+}
+
+.pricing-options-container {
+  display: flex;
+  align-items: baseline;
+}
+
+.pricing-options {
+    display: flex;
+    background-color: #2D7D2C;
+    border: 1px solid #1A5A1A;
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 16px;
+}
