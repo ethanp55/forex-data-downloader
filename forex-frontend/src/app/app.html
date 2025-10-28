@@ -1,22 +1,9 @@
 <body>
     <header>
-        <h1>Historical Forex Candle Data</h1>
-        <div class="buttons">
-            <a href="index.html" class="btn">Home</a>
-            <a href="download.html" class="btn">Download Data</a>
-            <a href="{{githubUrl}}" class="btn">GitHub Repo</a>
-        </div>
+        <h1>Forex Candle Downloader</h1>
+        <app-navigator></app-navigator>
     </header>
-    <a href="{{oandaUrl}}" class="link">Oanda's API</a>
     <main>
-        <p class="biggest">Download historical forex data.</p>
-        <p class="big">Enhance your analysis, backtesting, and trading strategies.</p>
-        <p class="warning">Requests with more than 5000 candles might be slower and/or time out, as we are limited by 
-            <a href="{{oandaUrl}}" class="link">Oanda's API</a>.
-        </p>
-        
-      </main>
+        <router-outlet></router-outlet>
+    </main>
 </body>
-
-
-<router-outlet />
