@@ -21,5 +21,5 @@ export enum CurrencyPair {
     GBP_CHF = "GBP_CHF",
     NZD_JPY = "NZD_JPY",
     CHF_JPY = "CHF_JPY",
-    NZD_CAD = "NZD_CAD"
+    NZD_CAD = "NZD_CAD",
 }

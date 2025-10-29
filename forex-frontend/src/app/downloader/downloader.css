@@ -6,21 +6,21 @@
 }
 
 label {
-  font-size: 16px;
-  font-weight: bold;
-  display: block;
-  margin-bottom: 1rem;
-  margin-right: 0.5rem;
+    font-size: 16px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 1rem;
+    margin-right: 0.5rem;
 }
 
 select {
-  background-color: #2D7D2C;
-  color: white;
-  border: 1px solid #1A5A1A;
-  border-radius: 5px;
-  padding: 5px;
-  font-size: 16px;
-  cursor: pointer; 
+    background-color: #2d7d2c;
+    color: white;
+    border: 1px solid #1a5a1a;
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 16px;
+    cursor: pointer;
 }
 
 .currency-pair-options-container {
@@ -45,14 +45,14 @@ select {
 }
 
 .pricing-options-container {
-  display: flex;
-  align-items: baseline;
+    display: flex;
+    align-items: baseline;
 }
 
 .pricing-options {
     display: flex;
-    background-color: #2D7D2C;
-    border: 1px solid #1A5A1A;
+    background-color: #2d7d2c;
+    border: 1px solid #1a5a1a;
     border-radius: 5px;
     padding: 5px;
     font-size: 16px;

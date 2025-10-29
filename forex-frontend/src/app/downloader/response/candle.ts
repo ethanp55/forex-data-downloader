@@ -14,6 +14,6 @@ export class Price {
         public o: number,
         public h: number,
         public l: number,
-        public c: number
+        public c: number,
     ) {}
 }

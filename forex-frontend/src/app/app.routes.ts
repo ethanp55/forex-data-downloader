@@ -1,14 +1,14 @@
-import { Routes } from '@angular/router';
-import { Downloader } from './downloader/downloader';
-import { Home } from './home/home';
+import { Routes } from "@angular/router";
+import { Downloader } from "./downloader/downloader";
+import { Home } from "./home/home";
 
 export const routes: Routes = [
     {
         path: "",
-        component: Home
+        component: Home,
     },
     {
         path: "download",
-        component: Downloader
-    }
+        component: Downloader,
+    },
 ];

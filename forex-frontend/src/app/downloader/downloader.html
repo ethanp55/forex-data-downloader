@@ -3,7 +3,9 @@
         <label for="currencyPair">Currency Pair:</label>
         <div>
             <select [(ngModel)]="currencyPair">
-                <option *ngFor="let pair of currencyPairOptions | keyvalue" [value]="pair.key">{{pair.value}}</option>
+                <option *ngFor="let pair of currencyPairOptions | keyvalue" [value]="pair.key">
+                    {{ pair.value }}
+                </option>
             </select>
         </div>
     </div>
@@ -12,14 +14,16 @@
         <label for="granularity">Time Frame:</label>
         <div>
             <select [(ngModel)]="granularity">
-                <option *ngFor="let gran of granularityOptions | keyvalue" [value]="gran.value">{{gran.value}}</option>
+                <option *ngFor="let gran of granularityOptions | keyvalue" [value]="gran.value">
+                    {{ gran.value }}
+                </option>
             </select>
         </div>
     </div>
 
     <div class="granularity-tooltip">
-        <div>D = Day, H = Hour,  M = Minute or Month, W = Week</div>
-        <div> Numbers represent quantities (Ex: H1 = 1 Hour, M30 = 30 Minutes)</div>
+        <div>D = Day, H = Hour, M = Minute or Month, W = Week</div>
+        <div>Numbers represent quantities (Ex: H1 = 1 Hour, M30 = 30 Minutes)</div>
         <div>M with no number = Month</div>
     </div>
 
@@ -27,11 +31,14 @@
         <label for="pricingComponents">Pricing Options:</label>
         <div class="pricing-options">
             <div *ngFor="let price of pricingComponentOptions | keyvalue">
-                <input class="foo" type="checkbox" [value]="price.value" [checked]="pricingComponents.includes(price.value)" (change)="togglePricingOption(price.value)">{{ price.key }}
+                <input
+                    class="foo"
+                    type="checkbox"
+                    [value]="price.value"
+                    [checked]="pricingComponents.includes(price.value)"
+                    (change)="togglePricingOption(price.value)"
+                />{{ price.key }}
             </div>
         </div>
     </div>
-
-
 </div>
-

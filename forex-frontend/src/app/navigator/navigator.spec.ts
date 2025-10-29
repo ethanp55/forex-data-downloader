@@ -1,23 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { Navigator } from './navigator';
+import { Navigator } from "./navigator";
 
-describe('Navigator', () => {
-  let component: Navigator;
-  let fixture: ComponentFixture<Navigator>;
+describe("Navigator", () => {
+    let component: Navigator;
+    let fixture: ComponentFixture<Navigator>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Navigator]
-    })
-    .compileComponents();
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            imports: [Navigator],
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(Navigator);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+        fixture = TestBed.createComponent(Navigator);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it("should create", () => {
+        expect(component).toBeTruthy();
+    });
 });

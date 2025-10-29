@@ -1,23 +1,20 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { Downloader } from './downloader';
+import { Downloader } from "./downloader";
 
-describe('Downloader', () => {
-  let component: Downloader;
-  let fixture: ComponentFixture<Downloader>;
+describe("Downloader", () => {
+    let component: Downloader;
+    let fixture: ComponentFixture<Downloader>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Downloader]
-    })
-    .compileComponents();
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({ imports: [Downloader] }).compileComponents();
 
-    fixture = TestBed.createComponent(Downloader);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+        fixture = TestBed.createComponent(Downloader);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it("should create", () => {
+        expect(component).toBeTruthy();
+    });
 });
