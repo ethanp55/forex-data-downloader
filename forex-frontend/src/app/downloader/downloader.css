@@ -23,6 +23,10 @@ select {
     cursor: pointer;
 }
 
+select:hover {
+    background-color: #1b5e20;
+}
+
 .currency-pair-options-container {
     display: flex;
     align-items: baseline;
@@ -34,14 +38,8 @@ select {
 }
 
 .granularity-tooltip {
-    position: relative;
-    /* top: 1rem; */
-    left: 12rem;
-    display: flex;
-    flex-direction: column;
-    align-items: baseline;
-    margin-bottom: 0.75rem;
-    gap: 10px;
+    margin-left: 0.25rem;
+    cursor: pointer;
 }
 
 .pricing-options-container {
@@ -55,7 +53,16 @@ select {
     border: 1px solid #1a5a1a;
     border-radius: 5px;
     padding: 5px;
-    font-size: 16px;
+    font-size: 14px;
+}
+
+.pricing-options:hover {
+    background-color: #1b5e20;
+    cursor: pointer;
+}
+
+input {
+    cursor: pointer;
 }
 
 .date-range-container {
@@ -67,4 +74,27 @@ select {
 .date-range-options {
     background-color: #2d7d2c;
     border-radius: 5px;
+}
+
+.error {
+    border: 1px solid red;
+}
+
+button {
+    margin-top: 3rem;
+    background-color: darkslateblue;
+    border: darkslateblue;
+}
+
+button[disabled] {
+    background-color: gray;
+    cursor: not-allowed;
+}
+
+button[disabled]:hover {
+    background-color: rgb(74, 74, 74);
+}
+
+button:hover {
+    background-color: rgb(54, 45, 106);
 }

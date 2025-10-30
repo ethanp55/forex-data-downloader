@@ -1,58 +1,76 @@
 <div class="options">
-    <div class="currency-pair-options-container">
-        <label for="currencyPair">Currency Pair:</label>
-        <div>
-            <select [(ngModel)]="currencyPair">
-                <option *ngFor="let pair of currencyPairOptions | keyvalue" [value]="pair.key">
-                    {{ pair.value }}
-                </option>
+    <form [formGroup]="form">
+        <div class="currency-pair-options-container">
+            <label for="currencyPair">Currency Pair:</label>
+            <select
+                id="currencyPair"
+                formControlName="currencyPair"
+                [ngClass]="{ error: !form.get('currencyPair')?.valid }"
+            >
+                @for (pair of currencyPairOptions | keyvalue; track pair) {
+                    <option [value]="pair.value">{{ pair.value }}</option>
+                }
             </select>
         </div>
-    </div>
 
-    <div class="granularity-options-container">
-        <label for="granularity">Time Frame:</label>
-        <div>
-            <select [(ngModel)]="granularity">
-                <option *ngFor="let gran of granularityOptions | keyvalue" [value]="gran.value">
-                    {{ gran.value }}
-                </option>
-            </select>
-        </div>
-    </div>
-
-    <div class="granularity-tooltip">
-        <div>D = Day, H = Hour, M = Minute or Month, W = Week</div>
-        <div>Numbers represent quantities (Ex: H1 = 1 Hour, M30 = 30 Minutes)</div>
-        <div>M with no number = Month</div>
-    </div>
-
-    <div class="pricing-options-container">
-        <label for="pricingComponents">Pricing Options:</label>
-        <div class="pricing-options">
-            <div *ngFor="let price of pricingComponentOptions | keyvalue">
-                <input
-                    class="foo"
-                    type="checkbox"
-                    [value]="price.value"
-                    [checked]="pricingComponents.includes(price.value)"
-                    (change)="togglePricingOption(price.value)"
-                />{{ price.key }}
+        <div class="granularity-options-container">
+            <label for="granularity">Time Frame:</label>
+            <div>
+                <select
+                    id="granularity"
+                    formControlName="granularity"
+                    [ngClass]="{ error: !form.get('granularity')?.valid }"
+                >
+                    @for (gran of granularityOptions | keyvalue; track gran) {
+                        <option [value]="gran.value">{{ gran.value }}</option>
+                    }
+                </select>
+            </div>
+            <div
+                class="granularity-tooltip"
+                matButton="elevated"
+                matTooltip="D = Day, H = Hour, M = Minute or Month, W = Week. Numbers represent quantities (Ex: H1 = 1 Hour, M30 = 30 Minutes). M with no number = Month."
+            >
+                ⓘ
             </div>
         </div>
-    </div>
 
-    <div class="date-range-container">
-        <label>Date Range:</label>
-        <mat-form-field class="date-range-options">
-            <mat-label>Enter a date range</mat-label>
-            <mat-date-range-input [rangePicker]="picker">
-                <input matStartDate [(ngModel)]="startDate" placeholder="Start date" />
-                <input matEndDate [(ngModel)]="endDate" placeholder="End date" />
-            </mat-date-range-input>
-            <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-date-range-picker #picker></mat-date-range-picker>
-        </mat-form-field>
-    </div>
+        <div class="pricing-options-container">
+            <label for="pricingComponents">Pricing Options:</label>
+            <div
+                class="pricing-options"
+                [ngClass]="{ error: !form.get('pricingComponents')?.valid }"
+            >
+                @for (price of pricingComponentOptions | keyvalue; track price) {
+                    <input
+                        id="pricingComponents"
+                        type="checkbox"
+                        [value]="price.value"
+                        [checked]="form.get('pricingComponents')?.value.includes(price.value)"
+                        (change)="togglePricingOption(price.value)"
+                    />{{ price.key }}
+                }
+            </div>
+        </div>
+
+        <div class="date-range-container">
+            <label>Date Range:</label>
+            <mat-form-field
+                class="date-range-options"
+                [ngClass]="{ error: !form.get('startDate')?.valid || !form.get('endDate')?.valid }"
+            >
+                <mat-date-range-input [rangePicker]="picker">
+                    <input matStartDate formControlName="startDate" placeholder="Start date" />
+                    <input matEndDate formControlName="endDate" placeholder="End date" />
+                </mat-date-range-input>
+                <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-date-range-picker #picker></mat-date-range-picker>
+            </mat-form-field>
+        </div>
+    </form>
+
+    <button class="btn" [disabled]="!form.valid" (click)="downloadCandles()">
+        Download Candles
+    </button>
 </div>
