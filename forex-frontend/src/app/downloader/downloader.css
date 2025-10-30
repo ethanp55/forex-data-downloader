@@ -57,3 +57,14 @@ select {
     padding: 5px;
     font-size: 16px;
 }
+
+.date-range-container {
+    display: flex;
+    align-items: baseline;
+    margin-top: 1rem;
+}
+
+.date-range-options {
+    background-color: #2d7d2c;
+    border-radius: 5px;
+}
