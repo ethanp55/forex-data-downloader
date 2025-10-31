@@ -108,3 +108,14 @@
         </span>
     }
 </div>
+
+@if (candlesSignal()) {
+    <div class="candles">
+        @for (candle of candlesSignal(); track candle) {
+            <div>
+                {{ candle.complete }} {{ candle.volume }} {{ candle.time.toUTCString() }}
+                {{ candle.bid }} {{ candle.mid }} {{ candle.ask?.o }}
+            </div>
+        }
+    </div>
+}

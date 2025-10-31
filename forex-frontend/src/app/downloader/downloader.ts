@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, WritableSignal } from "@angular/core";
 import { CurrencyPair } from "./request/currency-pair.enums";
 import { Granularity, getMinutes } from "./request/granularity.enums";
 import { PricingComponent } from "./request/pricing-component.enums";
@@ -15,6 +15,8 @@ import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { CandlesDownloadRequest } from "./request/candles-download-request";
+import { CandleService } from "../candle-service/candle-service";
+import { Candle } from "./response/candle";
 
 @Component({
     selector: "app-downloader",
@@ -32,7 +34,10 @@ import { CandlesDownloadRequest } from "./request/candles-download-request";
 export class Downloader {
     form: FormGroup;
 
-    constructor(private formBuilder: FormBuilder) {
+    constructor(
+        private formBuilder: FormBuilder,
+        private candleService: CandleService,
+    ) {
         // Set up the various inputs, with checks
         this.form = this.formBuilder.group({
             currencyPair: [null, Validators.required],
@@ -55,6 +60,9 @@ export class Downloader {
                 ],
             ],
         });
+
+        // Set up the candles signal
+        this.candlesSignal = this.candleService.candlesSignal;
     }
 
     private startDateBeforeEndDateValidator(
@@ -93,6 +101,9 @@ export class Downloader {
 
     // Max number of candles Oanda returns in a single request
     protected readonly oandaCandlesLimitation = 5000;
+
+    // Signal for reading candles once they are downloaded
+    protected readonly candlesSignal: WritableSignal<Candle[]>;
 
     // Used for updating the array of price options (bid, mid, and/or ask)
     protected togglePricingOption(option: PricingComponent): void {
@@ -209,6 +220,6 @@ export class Downloader {
             toDate,
         );
 
-        console.log("submitted");
+        this.candleService.downloadCandles(candlesDownloadRequest);
     }
 }
