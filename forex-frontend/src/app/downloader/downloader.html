@@ -1,16 +1,19 @@
 <div class="options">
-    <form [formGroup]="form">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="currency-pair-options-container">
             <label for="currencyPair">Currency Pair:</label>
             <select
                 id="currencyPair"
                 formControlName="currencyPair"
-                [ngClass]="{ error: !form.get('currencyPair')?.valid }"
+                [ngClass]="{ error: showError('currencyPair') }"
             >
                 @for (pair of currencyPairOptions | keyvalue; track pair) {
                     <option [value]="pair.value">{{ pair.value }}</option>
                 }
             </select>
+            @if (showError("currencyPair")) {
+                <span class="error-message">This field is required.</span>
+            }
         </div>
 
         <div class="granularity-options-container">
@@ -19,7 +22,7 @@
                 <select
                     id="granularity"
                     formControlName="granularity"
-                    [ngClass]="{ error: !form.get('granularity')?.valid }"
+                    [ngClass]="{ error: showError('granularity') }"
                 >
                     @for (gran of granularityOptions | keyvalue; track gran) {
                         <option [value]="gran.value">{{ gran.value }}</option>
@@ -33,14 +36,14 @@
             >
                 ⓘ
             </div>
+            @if (showError("granularity")) {
+                <span class="error-message">This field is required.</span>
+            }
         </div>
 
         <div class="pricing-options-container">
             <label for="pricingComponents">Pricing Options:</label>
-            <div
-                class="pricing-options"
-                [ngClass]="{ error: !form.get('pricingComponents')?.valid }"
-            >
+            <div class="pricing-options" [ngClass]="{ error: showError('pricingComponents') }">
                 @for (price of pricingComponentOptions | keyvalue; track price) {
                     <input
                         id="pricingComponents"
@@ -51,13 +54,16 @@
                     />{{ price.key }}
                 }
             </div>
+            @if (showError("pricingComponents")) {
+                <span class="error-message">This field is required.</span>
+            }
         </div>
 
         <div class="date-range-container">
             <label>Date Range:</label>
             <mat-form-field
                 class="date-range-options"
-                [ngClass]="{ error: !form.get('startDate')?.valid || !form.get('endDate')?.valid }"
+                [ngClass]="{ error: showError('startDate') || showError('endDate') }"
             >
                 <mat-date-range-input [rangePicker]="picker">
                     <input matStartDate formControlName="startDate" placeholder="Start date" />
@@ -68,9 +74,37 @@
                 <mat-date-range-picker #picker></mat-date-range-picker>
             </mat-form-field>
         </div>
+        @if (showError("startDate") || showError("endDate")) {
+            <span class="error-message date-error-message"
+                >This field is required, dates cannot be in the future, and the start date must come
+                before the end date.</span
+            >
+        }
     </form>
 
-    <button class="btn" [disabled]="!form.valid" (click)="downloadCandles()">
+    <button class="btn" [ngClass]="{ disabled: !form.valid }" (click)="onSubmit()">
         Download Candles
     </button>
+
+    @if (yearsTooFarBack()) {
+        <span class="warning-message"
+            ><strong>Warning:</strong> You are requesting data that is at least
+            {{ numYearsBack }} years in the past.
+            <br />
+            Oanda may not support data that old.
+            <br />You might find that some or no data is downloaded/returned.
+        </span>
+    }
+
+    @if (aLotOfCandles()) {
+        <span class="warning-message"
+            ><strong>Warning:</strong> You are requesting more than
+            {{ oandaCandlesLimitation }} candles.
+            <br />
+            Oanda allows a maximum of {{ oandaCandlesLimitation }} per request, which means multiple
+            requests will need to be sent.
+            <br />
+            As a result, your download make take several seconds and/or time out.
+        </span>
+    }
 </div>

@@ -17,3 +17,44 @@ export enum Granularity {
     W = "W",
     Month = "M",
 }
+
+export function getMinutes(granularity: Granularity): number {
+    switch (granularity) {
+        case Granularity.M1:
+            return 1;
+        case Granularity.M2:
+            return 2;
+        case Granularity.M4:
+            return 4;
+        case Granularity.M5:
+            return 5;
+        case Granularity.M10:
+            return 10;
+        case Granularity.M15:
+            return 15;
+        case Granularity.M30:
+            return 30;
+        case Granularity.H1:
+            return 60;
+        case Granularity.H2:
+            return 60 * 2;
+        case Granularity.H3:
+            return 60 * 3;
+        case Granularity.H4:
+            return 60 * 4;
+        case Granularity.H6:
+            return 60 * 6;
+        case Granularity.H8:
+            return 60 * 8;
+        case Granularity.H12:
+            return 60 * 12;
+        case Granularity.D:
+            return 60 * 24;
+        case Granularity.W:
+            return 60 * 24 * 7;
+        case Granularity.Month:
+            return 60 * 24 * 30;
+        default:
+            throw new Error("Unknown granularity");
+    }
+}
