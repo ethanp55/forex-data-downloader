@@ -61,8 +61,8 @@ export class Downloader {
             ],
         });
 
-        // Set up the candles signal
         this.candlesSignal = this.candleService.candlesSignal;
+        this.errorMessageSignal = this.candleService.errorMessageSignal;
     }
 
     private startDateBeforeEndDateValidator(
@@ -102,8 +102,9 @@ export class Downloader {
     // Max number of candles Oanda returns in a single request
     protected readonly oandaCandlesLimitation = 5000;
 
-    // Signal for reading candles once they are downloaded
+    // Signals for reading candles and/or error messages from the server
     protected readonly candlesSignal: WritableSignal<Candle[]>;
+    protected readonly errorMessageSignal: WritableSignal<string | null>;
 
     // Used for updating the array of price options (bid, mid, and/or ask)
     protected togglePricingOption(option: PricingComponent): void {

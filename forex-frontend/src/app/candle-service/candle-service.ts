@@ -13,6 +13,7 @@ export class CandleService {
     private backendUrl = "http://localhost:9000/downloadCandles";
 
     public candlesSignal: WritableSignal<Candle[]> = signal([]);
+    public errorMessageSignal: WritableSignal<string | null> = signal(null);
 
     public downloadCandles(candlesDownloadRequest: CandlesDownloadRequest): void {
         const headers = new HttpHeaders({
@@ -22,8 +23,16 @@ export class CandleService {
             .post<any>(this.backendUrl, JSON.stringify(candlesDownloadRequest), { headers })
             .pipe(
                 catchError((error) => {
-                    console.log(error);
-                    return of({ code: error.status, message: "Failed to download candles" });
+                    console.error(error);
+                    const serverError = error.error || null;
+                    const code = serverError?.code ?? "UNKNOWN_ERROR";
+                    const message = serverError?.message ?? "";
+                    const status = error.status || 520;
+                    this.errorMessageSignal.set(
+                        `status = ${status}; code = ${code}; message = ${message}`,
+                    );
+                    this.candlesSignal.set([]);
+                    return of([]);
                 }),
             )
             .subscribe((response) => {
@@ -31,7 +40,10 @@ export class CandleService {
                     const candles = this.parseCandles(response);
                     this.candlesSignal.set(candles);
                 } else {
-                    console.error(response);
+                    console.error(`Unknown data type in response: ${response}`);
+                    this.errorMessageSignal.set(
+                        `Unknown data type (expected an array): ${response}`,
+                    );
                     this.candlesSignal.set([]);
                 }
             });
@@ -45,6 +57,5 @@ export class CandleService {
 }
 
 // TODO:
-// - Handle error messages returned from the server
 // - Parse candles as csv
 // - Add table to data downloader component that displays the candles (be careful about loading every candle into the table right away)

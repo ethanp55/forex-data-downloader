@@ -1,5 +1,6 @@
 .options {
-    margin: 5rem;
+    margin-top: 5rem;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -113,4 +114,8 @@ button.disabled:hover {
     font-size: 14px;
     margin-top: 1rem;
     font-style: italic;
+}
+
+.warning-message .error-message {
+    color: indianred;
 }

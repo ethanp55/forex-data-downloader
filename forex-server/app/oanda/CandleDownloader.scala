@@ -172,7 +172,6 @@ class CandleDownloader @Inject() (backend: SyncBackend)(implicit
         case StatusCode.Ok =>
           val candlesJson: JsValue = Json.parse(response.body)("candles")
           val candles = candlesJson.as[Seq[Candle]]
-          println(candles)
 
           Right(candles)
 

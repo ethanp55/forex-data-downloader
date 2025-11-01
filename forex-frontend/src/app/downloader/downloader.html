@@ -109,13 +109,21 @@
     }
 </div>
 
-@if (candlesSignal()) {
-    <div class="candles">
+@if (candlesSignal().length > 0) {
+    <div>
         @for (candle of candlesSignal(); track candle) {
             <div>
                 {{ candle.complete }} {{ candle.volume }} {{ candle.time.toUTCString() }}
                 {{ candle.bid }} {{ candle.mid }} {{ candle.ask?.o }}
             </div>
         }
+    </div>
+}
+
+@if (errorMessageSignal() !== null) {
+    <div>
+        <span class="warning-message error-message"
+            ><strong>Error:</strong> {{ errorMessageSignal() }}</span
+        >
     </div>
 }
