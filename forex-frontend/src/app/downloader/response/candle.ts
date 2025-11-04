@@ -18,6 +18,19 @@ export class Candle {
             data.ask ? Price.fromJSON(data.ask) : undefined,
         );
     }
+
+    static generateCSV(candles: Candle[]): string {
+        const header =
+            "Complete,Volume,Time,Bid_Open,Bid_High,Bid_Low,Bid_Close,Mid_Open,Mid_High,Mid_Low,Mid_Close,Ask_Open,Ask_High,Ask_Low,Ask_Close\n";
+        const rows = candles
+            .map(
+                (candle) =>
+                    `${candle.complete},${candle.volume},${candle.time.toISOString()},${candle.bid?.o ?? ""},${candle.bid?.h ?? ""},${candle.bid?.l ?? ""},${candle.bid?.c ?? ""},${candle.mid?.o ?? ""},${candle.mid?.h ?? ""},${candle.mid?.l ?? ""},${candle.mid?.c ?? ""},${candle.ask?.o ?? ""},${candle.ask?.h ?? ""},${candle.ask?.l ?? ""},${candle.ask?.c ?? ""}`,
+            )
+            .join("\n");
+
+        return header + rows;
+    }
 }
 
 export class Price {

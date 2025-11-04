@@ -1,4 +1,4 @@
-import { Component, WritableSignal } from "@angular/core";
+import { Component, effect, WritableSignal } from "@angular/core";
 import { CurrencyPair } from "./request/currency-pair.enums";
 import { Granularity, getMinutes } from "./request/granularity.enums";
 import { PricingComponent } from "./request/pricing-component.enums";
@@ -63,6 +63,9 @@ export class Downloader {
 
         this.candlesSignal = this.candleService.candlesSignal;
         this.errorMessageSignal = this.candleService.errorMessageSignal;
+
+        // Download candles whenever they're updated
+        effect(() => this.downloadDataAsCSV(this.candlesSignal()));
     }
 
     private startDateBeforeEndDateValidator(
@@ -222,5 +225,23 @@ export class Downloader {
         );
 
         this.candleService.downloadCandles(candlesDownloadRequest);
+    }
+
+    private downloadDataAsCSV(candles: Candle[]) {
+        // Prevent downloads on empty data (first effect call from the constructor and any errors from the server)
+        if (candles.length > 0) {
+            const candlesCSV = Candle.generateCSV(candles);
+            const blob = new Blob([candlesCSV], {
+                type: "text/csv;charset=utf-8;",
+            });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "candles.csv");
+            link.style.visibility = "hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     }
 }
