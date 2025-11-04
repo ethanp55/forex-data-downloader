@@ -15,53 +15,54 @@
     </p>
 </div>
 
-<div class="options">
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="currency-pair-options-container">
-            <label for="currencyPair">Currency Pair:</label>
-            <select
-                id="currencyPair"
-                formControlName="currencyPair"
-                [ngClass]="{ error: showError('currencyPair') }"
-            >
-                @for (pair of currencyPairOptions | keyvalue; track pair) {
-                    <option [value]="pair.value">{{ pair.value }}</option>
-                }
-            </select>
-            @if (showError("currencyPair")) {
-                <span class="error-message">This field is required.</span>
-            }
-        </div>
-
-        <div class="granularity-options-container">
-            <label for="granularity">Time Frame:</label>
-            <div>
+<div class="candle-container">
+    <div class="options">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="currency-pair-options-container">
+                <label for="currencyPair">Currency Pair:</label>
                 <select
-                    id="granularity"
-                    formControlName="granularity"
-                    [ngClass]="{ error: showError('granularity') }"
+                    id="currencyPair"
+                    formControlName="currencyPair"
+                    [ngClass]="{ error: showError('currencyPair') }"
                 >
-                    @for (gran of granularityOptions | keyvalue; track gran) {
-                        <option [value]="gran.value">{{ gran.value }}</option>
+                    @for (pair of currencyPairOptions | keyvalue; track pair) {
+                    <option [value]="pair.value">{{ pair.value }}</option>
                     }
                 </select>
-            </div>
-            <div
-                class="granularity-tooltip"
-                matButton="elevated"
-                matTooltip="D = Day, H = Hour, M = Minute or Month, W = Week. Numbers represent quantities (Ex: H1 = 1 Hour, M30 = 30 Minutes). M with no number = Month."
-            >
-                ⓘ
-            </div>
-            @if (showError("granularity")) {
+                @if (showError("currencyPair")) {
                 <span class="error-message">This field is required.</span>
-            }
-        </div>
+                }
+            </div>
 
-        <div class="pricing-options-container">
-            <label for="pricingComponents">Pricing Options:</label>
-            <div class="pricing-options" [ngClass]="{ error: showError('pricingComponents') }">
-                @for (price of pricingComponentOptions | keyvalue; track price) {
+            <div class="granularity-options-container">
+                <label for="granularity">Time Frame:</label>
+                <div>
+                    <select
+                        id="granularity"
+                        formControlName="granularity"
+                        [ngClass]="{ error: showError('granularity') }"
+                    >
+                        @for (gran of granularityOptions | keyvalue; track gran) {
+                        <option [value]="gran.value">{{ gran.value }}</option>
+                        }
+                    </select>
+                </div>
+                <div
+                    class="granularity-tooltip"
+                    matButton="elevated"
+                    matTooltip="D = Day, H = Hour, M = Minute or Month, W = Week. Numbers represent quantities (Ex: H1 = 1 Hour, M30 = 30 Minutes). M with no number = Month."
+                >
+                    ⓘ
+                </div>
+                @if (showError("granularity")) {
+                <span class="error-message">This field is required.</span>
+                }
+            </div>
+
+            <div class="pricing-options-container">
+                <label for="pricingComponents">Pricing Options:</label>
+                <div class="pricing-options" [ngClass]="{ error: showError('pricingComponents') }">
+                    @for (price of pricingComponentOptions | keyvalue; track price) {
                     <input
                         id="pricingComponents"
                         type="checkbox"
@@ -69,41 +70,41 @@
                         [checked]="form.get('pricingComponents')?.value.includes(price.value)"
                         (change)="togglePricingOption(price.value)"
                     />{{ price.key }}
+                    }
+                </div>
+                @if (showError("pricingComponents")) {
+                <span class="error-message">This field is required.</span>
                 }
             </div>
-            @if (showError("pricingComponents")) {
-                <span class="error-message">This field is required.</span>
-            }
-        </div>
 
-        <div class="date-range-container">
-            <label>Date Range:</label>
-            <mat-form-field
-                class="date-range-options"
-                [ngClass]="{ error: showError('startDate') || showError('endDate') }"
-            >
-                <mat-date-range-input [rangePicker]="picker">
-                    <input matStartDate formControlName="startDate" placeholder="Start date" />
-                    <input matEndDate formControlName="endDate" placeholder="End date" />
-                </mat-date-range-input>
-                <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
-                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-date-range-picker #picker></mat-date-range-picker>
-            </mat-form-field>
-        </div>
-        @if (showError("startDate") || showError("endDate")) {
+            <div class="date-range-container">
+                <label>Date Range:</label>
+                <mat-form-field
+                    class="date-range-options"
+                    [ngClass]="{ error: showError('startDate') || showError('endDate') }"
+                >
+                    <mat-date-range-input [rangePicker]="picker">
+                        <input matStartDate formControlName="startDate" placeholder="Start date" />
+                        <input matEndDate formControlName="endDate" placeholder="End date" />
+                    </mat-date-range-input>
+                    <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
+                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-date-range-picker #picker></mat-date-range-picker>
+                </mat-form-field>
+            </div>
+            @if (showError("startDate") || showError("endDate")) {
             <span class="error-message date-error-message"
                 >This field is required, dates cannot be in the future, and the start date must come
                 before the end date.</span
             >
-        }
-    </form>
+            }
+        </form>
 
-    <button class="btn" [ngClass]="{ disabled: !form.valid }" (click)="onSubmit()">
-        Download Candles
-    </button>
+        <button class="btn" [ngClass]="{ disabled: !form.valid }" (click)="onSubmit()">
+            Download Candles
+        </button>
 
-    @if (yearsTooFarBack()) {
+        @if (yearsTooFarBack()) {
         <span class="warning-message"
             ><strong>Warning:</strong> You are requesting data that is at least
             {{ numYearsBack }} years in the past.
@@ -111,9 +112,7 @@
             Oanda may not support data that old.
             <br />You might find that some or no data is downloaded/returned.
         </span>
-    }
-
-    @if (aLotOfCandles()) {
+        } @if (aLotOfCandles()) {
         <span class="warning-message"
             ><strong>Warning:</strong> You are requesting more than
             {{ oandaCandlesLimitation }} candles.
@@ -123,24 +122,61 @@
             <br />
             As a result, your download make take several seconds and/or time out.
         </span>
+        }
+    </div>
+
+    @if (candlesSignal().length > 0) {
+    <div class="candles-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Complete</th>
+                    <th>Volume</th>
+                    <th>Time</th>
+                    <th>Bid Open</th>
+                    <th>Bid High</th>
+                    <th>Bid Low</th>
+                    <th>Bid Close</th>
+                    <th>Mid Open</th>
+                    <th>Mid High</th>
+                    <th>Mid Low</th>
+                    <th>Mid Close</th>
+                    <th>Ask Open</th>
+                    <th>Ask High</th>
+                    <th>Ask Low</th>
+                    <th>Ask Close</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (candle of candlesSignal(); track candle) {
+                <tr>
+                    <td>{{ candle.complete }}</td>
+                    <td>{{ candle.volume }}</td>
+                    <td>{{ candle.time.toISOString() }}</td>
+                    <td>{{ candle.bid?.o }}</td>
+                    <td>{{ candle.bid?.h }}</td>
+                    <td>{{ candle.bid?.l }}</td>
+                    <td>{{ candle.bid?.c }}</td>
+                    <td>{{ candle.mid?.o }}</td>
+                    <td>{{ candle.mid?.h }}</td>
+                    <td>{{ candle.mid?.l }}</td>
+                    <td>{{ candle.mid?.c }}</td>
+                    <td>{{ candle.ask?.o }}</td>
+                    <td>{{ candle.ask?.h }}</td>
+                    <td>{{ candle.ask?.l }}</td>
+                    <td>{{ candle.ask?.c }}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
     }
 </div>
 
-@if (candlesSignal().length > 0) {
-    <div>
-        @for (candle of candlesSignal(); track candle) {
-            <div>
-                {{ candle.complete }} {{ candle.volume }} {{ candle.time.toUTCString() }}
-                {{ candle.bid }} {{ candle.mid }} {{ candle.ask?.o }}
-            </div>
-        }
-    </div>
-}
-
 @if (errorMessageSignal() !== null) {
-    <div>
-        <span class="warning-message error-message"
-            ><strong>Error:</strong> {{ errorMessageSignal() }}</span
-        >
-    </div>
+<div>
+    <span class="warning-message error-message"
+        ><strong>Error:</strong> {{ errorMessageSignal() }}</span
+    >
+</div>
 }

@@ -34,10 +34,7 @@ import { Candle } from "./response/candle";
 export class Downloader {
     form: FormGroup;
 
-    constructor(
-        private formBuilder: FormBuilder,
-        private candleService: CandleService,
-    ) {
+    constructor(private formBuilder: FormBuilder, private candleService: CandleService) {
         // Set up the various inputs, with checks
         this.form = this.formBuilder.group({
             currencyPair: [null, Validators.required],
@@ -69,7 +66,7 @@ export class Downloader {
     }
 
     private startDateBeforeEndDateValidator(
-        control: AbstractControl,
+        control: AbstractControl
     ): { [key: string]: any } | null {
         const startDateField = control.get("startDate");
         const endDateField = control.get("endDate");
@@ -116,7 +113,7 @@ export class Downloader {
         if (pricingComponents.includes(option)) {
             this.form.patchValue({
                 pricingComponents: pricingComponents.filter(
-                    (item: PricingComponent) => item !== option,
+                    (item: PricingComponent) => item !== option
                 ),
             });
         } else {
@@ -221,27 +218,33 @@ export class Downloader {
             granularity,
             pricingComponents,
             fromDate,
-            toDate,
+            toDate
         );
 
         this.candleService.downloadCandles(candlesDownloadRequest);
     }
 
-    private downloadDataAsCSV(candles: Candle[]) {
-        // Prevent downloads on empty data (first effect call from the constructor and any errors from the server)
-        if (candles.length > 0) {
-            const candlesCSV = Candle.generateCSV(candles);
-            const blob = new Blob([candlesCSV], {
-                type: "text/csv;charset=utf-8;",
-            });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", "candles.csv");
-            link.style.visibility = "hidden";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+    private downloadDataAsCSV(candles: Candle[]): void {
+        // // Prevent downloads on empty data (first effect call from the constructor and any errors from the server)
+        // if (candles.length > 0) {
+        //     const candlesCSV = Candle.generateCSV(candles);
+        //     const blob = new Blob([candlesCSV], {
+        //         type: "text/csv;charset=utf-8;",
+        //     });
+        //     const link = document.createElement("a");
+        //     const url = URL.createObjectURL(blob);
+        //     link.setAttribute("href", url);
+        //     link.setAttribute("download", "candles.csv");
+        //     link.style.visibility = "hidden";
+        //     document.body.appendChild(link);
+        //     link.click();
+        //     document.body.removeChild(link);
+        // }
     }
 }
+
+// TODO:
+// - Add button to toggle candle table on/off -> make sure it's only enabled if the candle signal has data
+// - Fix UI so that if the table isn't shown the downloading options are centered
+// - Make sure error messages from the server are still properly displayed
+// - Uncomment the csv downloader code

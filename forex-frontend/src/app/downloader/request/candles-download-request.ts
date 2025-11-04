@@ -8,6 +8,6 @@ export class CandlesDownloadRequest {
         public granularity: Granularity,
         public pricingComponents: PricingComponent[],
         public fromDate: string,
-        public toDate: string,
+        public toDate: string
     ) {}
 }

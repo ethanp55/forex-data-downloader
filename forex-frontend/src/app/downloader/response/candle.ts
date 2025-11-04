@@ -5,7 +5,7 @@ export class Candle {
         public time: Date,
         public bid?: Price,
         public mid?: Price,
-        public ask?: Price,
+        public ask?: Price
     ) {}
 
     static fromJSON(data: any): Candle {
@@ -15,7 +15,7 @@ export class Candle {
             new Date(parseInt(data.time) * 1000),
             data.bid ? Price.fromJSON(data.bid) : undefined,
             data.mid ? Price.fromJSON(data.mid) : undefined,
-            data.ask ? Price.fromJSON(data.ask) : undefined,
+            data.ask ? Price.fromJSON(data.ask) : undefined
         );
     }
 
@@ -25,7 +25,13 @@ export class Candle {
         const rows = candles
             .map(
                 (candle) =>
-                    `${candle.complete},${candle.volume},${candle.time.toISOString()},${candle.bid?.o ?? ""},${candle.bid?.h ?? ""},${candle.bid?.l ?? ""},${candle.bid?.c ?? ""},${candle.mid?.o ?? ""},${candle.mid?.h ?? ""},${candle.mid?.l ?? ""},${candle.mid?.c ?? ""},${candle.ask?.o ?? ""},${candle.ask?.h ?? ""},${candle.ask?.l ?? ""},${candle.ask?.c ?? ""}`,
+                    `${candle.complete},${candle.volume},${candle.time.toISOString()},${
+                        candle.bid?.o ?? ""
+                    },${candle.bid?.h ?? ""},${candle.bid?.l ?? ""},${candle.bid?.c ?? ""},${
+                        candle.mid?.o ?? ""
+                    },${candle.mid?.h ?? ""},${candle.mid?.l ?? ""},${candle.mid?.c ?? ""},${
+                        candle.ask?.o ?? ""
+                    },${candle.ask?.h ?? ""},${candle.ask?.l ?? ""},${candle.ask?.c ?? ""}`
             )
             .join("\n");
 
@@ -34,19 +40,14 @@ export class Candle {
 }
 
 export class Price {
-    constructor(
-        public o: number,
-        public h: number,
-        public l: number,
-        public c: number,
-    ) {}
+    constructor(public o: number, public h: number, public l: number, public c: number) {}
 
     static fromJSON(data: any): Price {
         return new Price(
             parseFloat(data.o),
             parseFloat(data.h),
             parseFloat(data.l),
-            parseFloat(data.c),
+            parseFloat(data.c)
         );
     }
 }

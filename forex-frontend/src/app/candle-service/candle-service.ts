@@ -29,11 +29,11 @@ export class CandleService {
                     const message = serverError?.message ?? "";
                     const status = error.status || 520;
                     this.errorMessageSignal.set(
-                        `status = ${status}; code = ${code}; message = ${message}`,
+                        `status = ${status}; code = ${code}; message = ${message}`
                     );
                     this.candlesSignal.set([]);
                     return of([]);
-                }),
+                })
             )
             .subscribe((response) => {
                 if (Array.isArray(response)) {
@@ -42,7 +42,7 @@ export class CandleService {
                 } else {
                     console.error(`Unknown data type in response: ${response}`);
                     this.errorMessageSignal.set(
-                        `Unknown data type (expected an array): ${response}`,
+                        `Unknown data type (expected an array): ${response}`
                     );
                     this.candlesSignal.set([]);
                 }
@@ -55,7 +55,3 @@ export class CandleService {
         });
     }
 }
-
-// TODO:
-// - Parse candles as csv
-// - Add table to data downloader component that displays the candles (be careful about loading every candle into the table right away)
