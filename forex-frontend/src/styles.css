@@ -7,7 +7,7 @@ body {
 }
 
 .btn {
-    background-color: #2e7d32;
+    background-color: #2ca25f;
     color: white;
     padding: 10px 20px;
     text-decoration: none;
@@ -16,6 +16,6 @@ body {
 }
 
 .btn:hover {
-    background-color: #1b5e20;
+    background-color: #1a663b;
     cursor: pointer;
 }

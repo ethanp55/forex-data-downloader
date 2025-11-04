@@ -1,5 +1,4 @@
 .options {
-    margin-top: 5rem;
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
@@ -9,13 +8,12 @@
 label {
     font-size: 16px;
     font-weight: bold;
-    display: block;
     margin-bottom: 1rem;
     margin-right: 0.5rem;
 }
 
 select {
-    background-color: #2d7d2c;
+    background-color: #2ca25f;
     color: white;
     border: 1px solid #1a5a1a;
     border-radius: 5px;
@@ -25,7 +23,7 @@ select {
 }
 
 select:hover {
-    background-color: #1b5e20;
+    background-color: #1a663b;
 }
 
 .currency-pair-options-container {
@@ -50,7 +48,7 @@ select:hover {
 
 .pricing-options {
     display: flex;
-    background-color: #2d7d2c;
+    background-color: #2ca25f;
     border: 1px solid #1a5a1a;
     border-radius: 5px;
     padding: 5px;
@@ -58,7 +56,7 @@ select:hover {
 }
 
 .pricing-options:hover {
-    background-color: #1b5e20;
+    background-color: #1a663b;
     cursor: pointer;
 }
 
@@ -73,7 +71,7 @@ input {
 }
 
 .date-range-options {
-    background-color: #2d7d2c;
+    background-color: #2ca25f;
     border-radius: 5px;
 }
 
@@ -83,21 +81,21 @@ input {
 
 button {
     margin-top: 3rem;
-    background-color: darkslateblue;
-    border: darkslateblue;
+    background-color: #185143;
+    border: #185143;
 }
 
 button:hover {
-    background-color: rgb(54, 45, 106);
+    background-color: rgb(14, 53, 44);
 }
 
 button.disabled {
-    background-color: gray;
+    background-color: #8c989b;
     cursor: not-allowed;
 }
 
 button.disabled:hover {
-    background-color: rgb(74, 74, 74);
+    background-color: #677174;
 }
 
 .error-message {
@@ -118,4 +116,8 @@ button.disabled:hover {
 
 .warning-message .error-message {
     color: indianred;
+}
+
+.instructions {
+    margin-bottom: 3rem;
 }

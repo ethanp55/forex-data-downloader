@@ -1,3 +1,15 @@
+<div class="instructions">
+    <p>
+        Please specify the currency pair, time frame, prices (bid, mid, and/or ask), and date range
+        you would like to download data for. Note that dates cannot be in the future. Also note
+        that, with larger date ranges and/or smaller time frames, the number of candles will
+        increase; if the number of candles exceeds 5000, we will attempt to complete your request,
+        but it may time out due to limitations with Oanda's API.
+    </p>
+
+    <p><em>Data will be downloaded as a csv file.</em></p>
+</div>
+
 <div class="options">
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="currency-pair-options-container">
