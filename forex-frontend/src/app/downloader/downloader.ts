@@ -61,8 +61,11 @@ export class Downloader {
         this.candlesSignal = this.candleService.candlesSignal;
         this.errorMessageSignal = this.candleService.errorMessageSignal;
 
-        // Download candles whenever they're updated
-        effect(() => this.downloadDataAsCSV(this.candlesSignal()));
+        effect(() => {
+            if (this.candlesSignal().length >= 0) {
+                this.waitingForServer = false;
+            }
+        });
     }
 
     private startDateBeforeEndDateValidator(
@@ -105,6 +108,9 @@ export class Downloader {
     // Signals for reading candles and/or error messages from the server
     protected readonly candlesSignal: WritableSignal<Candle[]>;
     protected readonly errorMessageSignal: WritableSignal<string | null>;
+
+    // Flag for indicating that we're waiting for the server to download candles
+    protected waitingForServer = false;
 
     // Used for updating the array of price options (bid, mid, and/or ask)
     protected togglePricingOption(option: PricingComponent): void {
@@ -205,6 +211,7 @@ export class Downloader {
             return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
         }
 
+        // Create the request
         const currencyPair = this.form.get("currencyPair")?.value as CurrencyPair;
         const granularity = this.form.get("granularity")?.value as Granularity;
         const pricingComponents = this.form.get("pricingComponents")?.value as PricingComponent[];
@@ -221,30 +228,36 @@ export class Downloader {
             toDate
         );
 
+        // Before downloading new candles, clear any existing error messages
+        this.errorMessageSignal.set(null);
+
+        // Indicate that we're waiting for the server
+        this.waitingForServer = true;
+
+        // Send the request to the server
         this.candleService.downloadCandles(candlesDownloadRequest);
     }
 
-    private downloadDataAsCSV(candles: Candle[]): void {
-        // // Prevent downloads on empty data (first effect call from the constructor and any errors from the server)
-        // if (candles.length > 0) {
-        //     const candlesCSV = Candle.generateCSV(candles);
-        //     const blob = new Blob([candlesCSV], {
-        //         type: "text/csv;charset=utf-8;",
-        //     });
-        //     const link = document.createElement("a");
-        //     const url = URL.createObjectURL(blob);
-        //     link.setAttribute("href", url);
-        //     link.setAttribute("download", "candles.csv");
-        //     link.style.visibility = "hidden";
-        //     document.body.appendChild(link);
-        //     link.click();
-        //     document.body.removeChild(link);
-        // }
+    protected downloadDataAsCSV(): void {
+        const candles = this.candlesSignal();
+
+        if (candles.length > 0) {
+            const candlesCSV = Candle.generateCSV(candles);
+            const blob = new Blob([candlesCSV], {
+                type: "text/csv;charset=utf-8;",
+            });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "candles.csv");
+            link.style.visibility = "hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     }
 }
 
 // TODO:
-// - Add button to toggle candle table on/off -> make sure it's only enabled if the candle signal has data
-// - Fix UI so that if the table isn't shown the downloading options are centered
-// - Make sure error messages from the server are still properly displayed
-// - Uncomment the csv downloader code
+// - Process json in batches
+// - Catch out of memory errors

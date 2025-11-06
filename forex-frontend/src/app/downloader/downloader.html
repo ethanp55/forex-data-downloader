@@ -9,7 +9,7 @@
 
     <p>
         <em
-            >Data will be downloaded as a csv file. For the best results, use a Chromium-based
+            >Data can be downloaded as a csv file. For the best results, use a Chromium-based
             browser (Brave, Chrome, etc.)</em
         >
     </p>
@@ -91,18 +91,35 @@
                     <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
                     <mat-date-range-picker #picker></mat-date-range-picker>
                 </mat-form-field>
+
+                @if (showError("startDate") || showError("endDate")) {
+                <span class="error-message date-error-message"
+                    >This field is required, dates cannot be in the future, and the start date must
+                    come before the end date.</span
+                >
+                }
             </div>
-            @if (showError("startDate") || showError("endDate")) {
-            <span class="error-message date-error-message"
-                >This field is required, dates cannot be in the future, and the start date must come
-                before the end date.</span
-            >
-            }
         </form>
 
-        <button class="btn" [ngClass]="{ disabled: !form.valid }" (click)="onSubmit()">
-            Download Candles
-        </button>
+        <div class="buttons-container">
+            <button
+                class="btn"
+                [ngClass]="{ disabled: !form.valid || waitingForServer }"
+                (click)="onSubmit()"
+            >
+                @if(waitingForServer) {
+                <span class="spinner"></span>
+                } Download Candles
+            </button>
+
+            <button
+                class="btn"
+                [ngClass]="{ disabled: candlesSignal().length === 0 || waitingForServer }"
+                (click)="downloadDataAsCSV()"
+            >
+                Download Candles as CSV
+            </button>
+        </div>
 
         @if (yearsTooFarBack()) {
         <span class="warning-message"
@@ -125,8 +142,12 @@
         }
     </div>
 
-    @if (candlesSignal().length > 0) {
     <div class="candles-table">
+        <strong
+            >Candles @if(candlesSignal().length >= 5000) {(Only Showing 5000, Save as CSV for the
+            Full Dataset)}</strong
+        >
+
         <table>
             <thead>
                 <tr>
@@ -148,7 +169,7 @@
                 </tr>
             </thead>
             <tbody>
-                @for (candle of candlesSignal(); track candle) {
+                @for (candle of candlesSignal().slice(0, 5000); let i = $index; track i) {
                 <tr>
                     <td>{{ candle.complete }}</td>
                     <td>{{ candle.volume }}</td>
@@ -170,7 +191,6 @@
             </tbody>
         </table>
     </div>
-    }
 </div>
 
 @if (errorMessageSignal() !== null) {

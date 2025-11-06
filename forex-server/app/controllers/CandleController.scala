@@ -80,7 +80,19 @@ class CandleController @Inject() (
           resultWithTimeout
             .map {
               case Left(error)    => BadRequest(Json.toJson(error))
-              case Right(candles) => Ok(Json.toJson(candles))
+              case Right(candles) =>
+                try {
+                  Ok(Json.toJson(candles))
+                } catch {
+                  case e: Exception =>
+                    InternalServerError(
+                      Json.toJson(
+                        UnknownServerError(
+                          s"Could not convert candles to JSON for request $candlesDownloadRequest: ${e.getMessage}"
+                        )
+                      )
+                    )
+                }
             }
             .recover { case exception: Exception =>
               InternalServerError(

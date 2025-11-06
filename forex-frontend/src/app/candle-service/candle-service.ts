@@ -26,7 +26,7 @@ export class CandleService {
                     console.error(error);
                     const serverError = error.error || null;
                     const code = serverError?.code ?? "UNKNOWN_ERROR";
-                    const message = serverError?.message ?? "";
+                    const message = serverError?.message ?? "(message not provided)";
                     const status = error.status || 520;
                     this.errorMessageSignal.set(
                         `status = ${status}; code = ${code}; message = ${message}`
@@ -39,6 +39,10 @@ export class CandleService {
                 if (Array.isArray(response)) {
                     const candles = this.parseCandles(response);
                     this.candlesSignal.set(candles);
+
+                    if (response.length > 0) {
+                        this.errorMessageSignal.set(null);
+                    }
                 } else {
                     console.error(`Unknown data type in response: ${response}`);
                     this.errorMessageSignal.set(
