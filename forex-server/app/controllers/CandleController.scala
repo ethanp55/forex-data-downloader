@@ -16,6 +16,7 @@ import play.api.libs.json.Json
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 import org.apache.pekko.pattern.after
+import org.apache.pekko.stream.scaladsl.Source
 
 /** Class that handles requests to download historical candle data from Oanda.
   * The @Singleton decorator is used because only one instance is needed.
@@ -39,7 +40,7 @@ class CandleController @Inject() (
     ec: ExecutionContext
 ) extends BaseController {
 
-  protected val timeoutDuration: FiniteDuration = 20.seconds
+  protected val timeoutDuration: FiniteDuration = 10.seconds
 
   /** The main (and only) endpoint for downloading historical candle data from
     * Oanda. See the routes file. Note that a POST request must be made (not a
@@ -49,7 +50,8 @@ class CandleController @Inject() (
     * time (i.e., provide non-blocking functionality).
     * @return
     *   A Future result. If everything works properly, a JSONified sequence of
-    *   Candle objects is returned in an Ok response.
+    *   Candle objects is streamed in chunks in an Ok response. Streaming is
+    *   used in case there are a large number of candles.
     */
   def downloadCandles() = Action.async(parse.json) { request =>
     request.body
@@ -81,18 +83,12 @@ class CandleController @Inject() (
             .map {
               case Left(error)    => BadRequest(Json.toJson(error))
               case Right(candles) =>
-                try {
-                  Ok(Json.toJson(candles))
-                } catch {
-                  case e: Exception =>
-                    InternalServerError(
-                      Json.toJson(
-                        UnknownServerError(
-                          s"Could not convert candles to JSON for request $candlesDownloadRequest: ${e.getMessage}"
-                        )
-                      )
-                    )
-                }
+                val candleSource: Source[Candle, _] = Source(candles)
+                val jsonStream = candleSource
+                  .grouped(candleDownloader.maxCandlesPerRequest)
+                  .map(Json.toJson(_))
+
+                Ok.chunked(jsonStream).as("application/json")
             }
             .recover { case exception: Exception =>
               InternalServerError(

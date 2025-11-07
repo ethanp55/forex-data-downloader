@@ -1,10 +1,17 @@
 <div class="instructions">
     <p>
         Please specify the currency pair, time frame, prices (bid, mid, and/or ask), and date range
-        you would like to download data for. Note that dates cannot be in the future. Also note
-        that, with larger date ranges and/or smaller time frames, the number of candles will
-        increase; if the number of candles exceeds 5000, we will attempt to complete your request,
-        but it may time out due to limitations with Oanda's API.
+        you would like to download data for. Dates cannot be in the future.
+    </p>
+
+    <p>
+        Larger date ranges and/or smaller time frames will increase the number of candles. If the
+        number of candles exceeds 5000, we will attempt to complete your request, but it may time
+        out due to limitations with Oanda's API.
+    </p>
+
+    <p>
+        If the number of candles exceeds 500,000 (100 Oanda requests), we will cancel your request.
     </p>
 
     <p>
@@ -117,7 +124,7 @@
                 [ngClass]="{ disabled: candlesSignal().length === 0 || waitingForServer }"
                 (click)="downloadDataAsCSV()"
             >
-                Download Candles as CSV
+                Save Candles as CSV
             </button>
         </div>
 

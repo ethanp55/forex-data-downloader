@@ -98,6 +98,9 @@ class CandleControllerSpec
         )
           .thenReturn(Future.successful(Right(candles)))
 
+        // Set the number to group by when streaming JSON
+        when(candleDownloaderMock.maxCandlesPerRequest).thenReturn(5000)
+
         // Test response
         val response = candleControllerMock.downloadCandles().apply(request)
 

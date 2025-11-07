@@ -16,8 +16,9 @@ import org.mockito.stubbing.Answer
 import org.scalatest.funspec.AsyncFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
-import request.{Bid, CandlesDownloadRequest, EUR_USD, H1}
+import request.{Bid, CandlesDownloadRequest, EUR_USD, H1, M1}
 import sttp.client4.{Request, Response, SyncBackend}
+
 import scala.concurrent.Future
 
 class CandleDownloaderTest(backend: SyncBackend)(implicit
@@ -108,6 +109,31 @@ class CandleDownloaderSpec
         testRequests.left.getOrElse(
           DateTimeParseServerError("wah wah")
         ) shouldEqual expectedError
+      }
+    }
+
+    describe("downloadCandles") {
+      it(
+        "should return an error if too many requests need to be sent to Oanda"
+      ) {
+        val candlesDownloadRequest = CandlesDownloadRequest(
+          EUR_USD,
+          M1,
+          Seq(Bid),
+          "2015-01-01 00:00:00",
+          "2025-01-01 00:00:00"
+        )
+
+        val testResult =
+          candleDownloaderTest.downloadCandles(candlesDownloadRequest)
+        testResult.map {
+          case Left(error) =>
+            error shouldBe a[OandaApiServerError]
+            error.message should include(
+              s"requests will need to be sent to Oanda, which exceeds the limit of"
+            )
+          case Right(_) => fail("wah wah")
+        }
       }
     }
 

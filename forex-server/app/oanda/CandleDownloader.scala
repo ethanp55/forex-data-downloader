@@ -44,8 +44,9 @@ class CandleDownloader @Inject() (backend: SyncBackend)(implicit
     StatusCode.GatewayTimeout
   )
   // Oanda's API only sends a max of 5000 candles per request
-  private val maxCandlesPerRequest: Int = 5000
-  private val waitTime: Int = 20
+  val maxCandlesPerRequest: Int = 5000
+  // Cut off the user if too many requests are being sent
+  private val maxNumRequestsToOanda: Int = 100
 
   /** Helper function that converts LocalDateTime objects to UNIX (Oanda expects
     * times to be in UNIX format).
@@ -229,7 +230,18 @@ class CandleDownloader @Inject() (backend: SyncBackend)(implicit
     val requestsEither = createRequests(candlesDownloadRequest)
     requestsEither match {
       case Left(error)     => Future(Left(error))
-      case Right(requests) => sendRequests(requests)
+      case Right(requests) =>
+        if (requests.length > maxNumRequestsToOanda) {
+          Future(
+            Left(
+              OandaApiServerError(
+                s"${requests.length} requests will need to be sent to Oanda, which exceeds the limit of $maxNumRequestsToOanda"
+              )
+            )
+          )
+        } else {
+          sendRequests(requests)
+        }
     }
   }
 }

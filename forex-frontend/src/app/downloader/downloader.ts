@@ -258,6 +258,6 @@ export class Downloader {
     }
 }
 
-// TODO:
-// - Process json in batches
-// - Catch out of memory errors
+// Friday:
+// - Start looking into unit test documentation
+// - Add comments and doc strings
