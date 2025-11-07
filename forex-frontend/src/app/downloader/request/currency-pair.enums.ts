@@ -1,3 +1,6 @@
+/**
+ * Enum that holds the different currency pairs users can choose from.
+ */
 export enum CurrencyPair {
     // Major pairs
     EUR_USD = "EUR_USD",

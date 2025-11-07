@@ -15,6 +15,6 @@ export const appConfig: ApplicationConfig = {
         provideZoneChangeDetection({ eventCoalescing: true }),
         provideRouter(routes),
         provideNativeDateAdapter(),
-        provideHttpClient(withFetch()),
+        provideHttpClient(withFetch()), // Use withFetch() to be able to stream data from the server
     ],
 };

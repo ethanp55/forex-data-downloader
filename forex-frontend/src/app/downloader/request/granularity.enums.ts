@@ -1,3 +1,6 @@
+/**
+ * Enum that holds the different time frames/granularities users can choose from.
+ */
 export enum Granularity {
     M1 = "M1",
     M2 = "M2",
@@ -18,6 +21,15 @@ export enum Granularity {
     Month = "M",
 }
 
+/**
+ * Helper function for getting the number of minutes a time frame/granularity represents.
+ *
+ * @param granularity The time frame/granularity we want to calculate the number of minutes
+ * for.
+ *
+ * @returns The number of minutes a time frame/granularity represents.  For example, H1 (an
+ * hour) represents 60 minutes.
+ */
 export function getMinutes(granularity: Granularity): number {
     switch (granularity) {
         case Granularity.M1:
