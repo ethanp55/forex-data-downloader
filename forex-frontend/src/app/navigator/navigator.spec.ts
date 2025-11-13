@@ -67,11 +67,13 @@ describe("Navigator", () => {
 
     it("home button should display home component", async () => {
         await harness.navigateByUrl("");
+
         expect(harness.routeNativeElement?.textContent).toContain("Home");
     });
 
     it("download button should display download component", async () => {
         await harness.navigateByUrl("download");
+
         expect(harness.routeNativeElement?.textContent).toContain("Download");
     });
 });
