@@ -37,7 +37,9 @@
                     }
                 </select>
                 @if (showError("currencyPair")) {
-                <span class="error-message">This field is required.</span>
+                <span testid="currency-pair-error-message" class="error-message"
+                    >This field is required.</span
+                >
                 }
             </div>
 
@@ -62,7 +64,9 @@
                     ⓘ
                 </div>
                 @if (showError("granularity")) {
-                <span class="error-message">This field is required.</span>
+                <span testid="granularity-error-message" class="error-message"
+                    >This field is required.</span
+                >
                 }
             </div>
 
@@ -80,13 +84,16 @@
                     }
                 </div>
                 @if (showError("pricingComponents")) {
-                <span class="error-message">This field is required.</span>
+                <span testid="pricing-component-error-message" class="error-message"
+                    >This field is required.</span
+                >
                 }
             </div>
 
             <div class="date-range-container">
                 <label>Date Range:</label>
                 <mat-form-field
+                    testid="date-range-picker"
                     class="date-range-options"
                     [ngClass]="{ error: showError('startDate') || showError('endDate') }"
                 >
@@ -100,7 +107,7 @@
                 </mat-form-field>
 
                 @if (showError("startDate") || showError("endDate")) {
-                <span class="error-message date-error-message"
+                <span testid="date-range-error-message" class="error-message date-error-message"
                     >This field is required, dates cannot be in the future, and the start date must
                     come before the end date.</span
                 >
@@ -111,6 +118,7 @@
         <div class="buttons-container">
             <button
                 class="btn"
+                testid="download-button"
                 [ngClass]="{ disabled: !form.valid || waitingForServer }"
                 (click)="onSubmit()"
             >
@@ -121,6 +129,7 @@
 
             <button
                 class="btn"
+                testid="csv-button"
                 [ngClass]="{ disabled: candlesSignal().length === 0 || waitingForServer }"
                 (click)="downloadDataAsCSV()"
             >
@@ -155,7 +164,7 @@
             Full Dataset)}</strong
         >
 
-        <table>
+        <table testid="candles-table">
             <thead>
                 <tr>
                     <th>Complete</th>
@@ -201,7 +210,7 @@
 </div>
 
 @if (errorMessageSignal() !== null) {
-<div>
+<div testid="server-error-message">
     <span class="warning-message error-message"
         ><strong>Error:</strong> {{ errorMessageSignal() }}</span
     >

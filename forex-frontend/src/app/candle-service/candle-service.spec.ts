@@ -103,7 +103,7 @@ describe("CandleService", () => {
         });
     });
 
-    it("properly handle cases with no request errors, but where unexpected JSON was received from the server", () => {
+    it("should properly handle cases with no request errors, but where unexpected JSON was received from the server", () => {
         const mockResponse = "foo bar baz wtf";
         httpClientSpy.post.and.returnValue(of(new HttpResponse({ body: mockResponse })));
 
@@ -117,6 +117,21 @@ describe("CandleService", () => {
         expect(errorMessage).toBe(
             "Unknown body data type (expected an array of candles): foo bar baz wtf"
         );
+    });
+
+    it("should clear the candles signal when an error occurs", () => {
+        // Populate the candles signal with initial data
+        const candle = new Candle(true, 1000, new Date(Date.now()));
+        service.candlesSignal.set(Array(50).fill(candle));
+        let candles = service.candlesSignal();
+        expect(candles.length).toBe(50);
+
+        // Mock an error response and check that the candles signal is empty
+        const errorResponse = {};
+        httpClientSpy.post.and.returnValue(throwError(() => errorResponse));
+        service.downloadCandles(mockDownloadRequest);
+        candles = service.candlesSignal();
+        expect(candles.length).toBe(0);
     });
 
     describe("should properly download candles", () => {
