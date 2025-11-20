@@ -34,6 +34,9 @@ export class CandleService {
      * @param candlesDownloadRequest Request for downloading historical forex candle data.
      */
     public downloadCandles(candlesDownloadRequest: CandlesDownloadRequest): void {
+        // Before downloading new candles, clear any existing error messages
+        this.errorMessageSignal.set(null);
+
         // Headers
         const headers = new HttpHeaders({
             "Content-Type": "application/json",

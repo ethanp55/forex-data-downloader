@@ -291,9 +291,6 @@ export class Downloader {
             toDate
         );
 
-        // Before downloading new candles, clear any existing error messages
-        this.errorMessageSignal.set(null);
-
         // Indicate that we're waiting for the server (to show the loading indicator)
         this.waitingForServer = true;
 

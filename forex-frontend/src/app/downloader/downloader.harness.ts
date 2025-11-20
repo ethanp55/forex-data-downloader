@@ -22,8 +22,22 @@ export class DownloaderHarness extends ComponentHarness {
         return await this.getPricingComponenetsFormInput();
     }
 
-    async dateRangeFormInput() {
-        return await this.getDateRangeFormInput();
+    async openCalendar() {
+        const dateRangeHarness = await this.getDateRangeFormInput();
+        await dateRangeHarness.openCalendar();
+    }
+
+    async closeCalendar() {
+        const dateRangeHarness = await this.getDateRangeFormInput();
+        await dateRangeHarness.closeCalendar();
+    }
+
+    async setDateRange(startDate: string, endDate: string) {
+        const dateHarness = await this.getDateRangeFormInput();
+        const startInput = await dateHarness.getStartInput();
+        const endInput = await dateHarness.getEndInput();
+        startInput.setValue(startDate);
+        await endInput.setValue(endDate);
     }
 
     // Error messages
@@ -115,14 +129,37 @@ export class DownloaderHarness extends ComponentHarness {
 
     // Buttons
     private downloadButton = this.locatorFor('[testid="download-button"]');
+    private saveAsCsvButton = this.locatorFor('[testid="csv-button"]');
+
+    async downloadIsDisabled() {
+        const downloadButton = await this.downloadButton();
+        const isDisabled = await downloadButton.hasClass("disabled");
+        return isDisabled;
+    }
+
+    async downloadHasSpinner() {
+        const downloadSpinner = await this.locatorForOptional('[testid="download-spinner"]')();
+        return !!downloadSpinner;
+    }
 
     async clickDownloadButton() {
         const button = await this.downloadButton();
-        button.click();
+        await button.click();
+    }
+
+    async csvIsDisabled() {
+        const csvButton = await this.saveAsCsvButton();
+        const isDisabled = await csvButton.hasClass("disabled");
+        return isDisabled;
     }
 
     // Candle table
     private candlesTableRows = this.locatorForAll('table[testid="candles-table"] tr');
+
+    async getTableRows() {
+        const rows = await this.candlesTableRows();
+        return rows;
+    }
 
     async numRowsInTable() {
         const rows = await this.candlesTableRows();

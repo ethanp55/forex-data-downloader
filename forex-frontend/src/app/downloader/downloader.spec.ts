@@ -5,7 +5,7 @@ import { FormBuilder } from "@angular/forms";
 import { provideNativeDateAdapter } from "@angular/material/core";
 import { DownloaderHarness } from "./downloader.harness";
 import { TestbedHarnessEnvironment } from "@angular/cdk/testing/testbed";
-import { Candle } from "./response/candle";
+import { Candle, Price } from "./response/candle";
 
 describe("Downloader", () => {
     let component: Downloader;
@@ -18,6 +18,7 @@ describe("Downloader", () => {
             "candlesSignal",
             "errorMessageSignal",
             "downloadCandles",
+            "errorMessageSignal.set",
         ]);
         candleServiceSpy.candlesSignal.and.returnValue([]);
         candleServiceSpy.errorMessageSignal.and.returnValue(null);
@@ -44,7 +45,7 @@ describe("Downloader", () => {
         expect(component).toBeTruthy();
     });
 
-    describe("error messages", () => {
+    describe("on errors", () => {
         describe("from the form", () => {
             it("should not be shown when the component is first loaded", async () => {
                 const noErrorMessages = await componentHarness.noErrorMessagesExist();
@@ -72,9 +73,8 @@ describe("Downloader", () => {
                 expect(errorMessageShown).toBeTrue();
 
                 // Date range
-                const dateHarness = await componentHarness.dateRangeFormInput();
-                await dateHarness.openCalendar();
-                await dateHarness.closeCalendar();
+                await componentHarness.openCalendar();
+                await componentHarness.closeCalendar();
                 errorMessageShown = await componentHarness.dateRangeErrorMessageExists();
                 expect(errorMessageShown).toBeTrue();
             });
@@ -86,11 +86,7 @@ describe("Downloader", () => {
             });
 
             it("should show a date error if the start date is after the end date", async () => {
-                const dateHarness = await componentHarness.dateRangeFormInput();
-                const startInput = await dateHarness.getStartInput();
-                startInput.setValue("10/31/2025");
-                const endInput = await dateHarness.getEndInput();
-                await endInput.setValue("10/1/2025");
+                await componentHarness.setDateRange("10/31/2025", "10/1/2025");
                 const errorMessageShown = await componentHarness.dateRangeErrorMessageExists();
                 expect(errorMessageShown).toBeTrue();
             });
@@ -103,17 +99,12 @@ describe("Downloader", () => {
                 const futureDateString = `${currDate.getMonth()}/${currDate.getDate()}/${currDate.getFullYear()}`;
                 currDate.setFullYear(currDate.getFullYear() - 2);
                 const startDateString = `${currDate.getMonth()}/${currDate.getDate()}/${currDate.getFullYear()}`;
-                const dateHarness = await componentHarness.dateRangeFormInput();
-                const startInput = await dateHarness.getStartInput();
-                startInput.setValue(startDateString);
-                const endInput = await dateHarness.getEndInput();
-                await endInput.setValue(futureDateString);
+                await componentHarness.setDateRange(startDateString, futureDateString);
                 let errorMessageShown = await componentHarness.dateRangeErrorMessageExists();
                 expect(errorMessageShown).toBeTrue();
 
                 // Set the end date back to the current date and make sure the error is gone
-                startInput.setValue(startDateString);
-                await endInput.setValue(currDateString);
+                await await componentHarness.setDateRange(startDateString, currDateString);
                 errorMessageShown = await componentHarness.dateRangeErrorMessageExists();
                 expect(errorMessageShown).toBeFalse();
             });
@@ -128,26 +119,6 @@ describe("Downloader", () => {
                 const errorMessageText = await componentHarness.serverErrorMessageText();
                 expect(errorMessageText).toBe("Error: foo bar server error");
             });
-
-            // it("should clear the candle table if data was previously in the table", async () => {
-            //     // Add candles to the table
-            //     const candle = new Candle(true, 1000, new Date(Date.now()));
-            //     candleServiceSpy.candlesSignal.and.returnValue(Array(50).fill(candle));
-            //     fixture.detectChanges();
-            //     let numRows = await componentHarness.numRowsInTable();
-            //     expect(numRows).toBe(50);
-
-            //     // Set an error message and remove the candles
-            //     candleServiceSpy.candlesSignal.and.returnValue([]);
-            //     candleServiceSpy.errorMessageSignal.and.returnValue("foo bar server error");
-            //     fixture.detectChanges();
-            //     const errorMessageShown = await componentHarness.serverErrorMessageExists();
-            //     expect(errorMessageShown).toBeTrue();
-            //     const errorMessageText = await componentHarness.serverErrorMessageText();
-            //     expect(errorMessageText).toBe("Error: foo bar server error");
-            //     numRows = await componentHarness.numRowsInTable();
-            //     expect(numRows).toBe(0);
-            // });
         });
     });
 
@@ -158,11 +129,7 @@ describe("Downloader", () => {
             const endDateString = `${currDate.getMonth()}/${currDate.getDate()}/${currDate.getFullYear()}`;
             currDate.setMonth(currDate.getMonth() - 1);
             const startDateString = `${currDate.getMonth()}/${currDate.getDate()}/${currDate.getFullYear()}`;
-            const dateHarness = await componentHarness.dateRangeFormInput();
-            const startInput = await dateHarness.getStartInput();
-            startInput.setValue(startDateString);
-            const endInput = await dateHarness.getEndInput();
-            endInput.setValue(endDateString);
+            await componentHarness.setDateRange(startDateString, endDateString);
 
             // Set the time frame to one minute (index 8 in the dropdown select menu)
             const granularityInput = await componentHarness.timeFrameFormInput();
@@ -173,22 +140,117 @@ describe("Downloader", () => {
         });
 
         it("should be displayed when downloading data that is several years old", async () => {
-            const dateHarness = await componentHarness.dateRangeFormInput();
-            const startInput = await dateHarness.getStartInput();
-            startInput.setValue("10/1/1975");
-            const endInput = await dateHarness.getEndInput();
-            await endInput.setValue("10/31/1975");
+            await componentHarness.setDateRange("10/1/1975", "10/31/1975");
             const warningMessageShown = await componentHarness.dataTooOldWarningMessageExists();
             expect(warningMessageShown).toBeTrue();
         });
     });
 
-    // UI edge cases:
-    // - Download button should be disabled before every field is specified
-    // - Download button should be disabled and show spinning animation while waiting for the server to return data
-    // - Save as csv button should be disabled if the candles array is empty
-    // Successes:
-    // - Candles should be displayed in the table
-    // - A max of 5000 candles should be displayed in the table
-    // - Saving as a csv should work properly (this might be more complicated, so if we don't get to it don't worry)
+    describe("UI", () => {
+        it("should disable the download button before every required field is specified", async () => {
+            // Should be disabled by default (when the component first loads)
+            let isDisabled = await componentHarness.downloadIsDisabled();
+            expect(isDisabled).toBeTrue();
+
+            // Should still be disabled after specifying some fields but not all
+            let formInput = await componentHarness.currencyPairFormInput();
+            formInput.selectOptions(0);
+            formInput = await componentHarness.timeFrameFormInput();
+            formInput.selectOptions(0);
+            formInput = await componentHarness.pricingComponentsFormInput();
+            await formInput.click();
+            isDisabled = await componentHarness.downloadIsDisabled();
+            expect(isDisabled).toBeTrue();
+
+            // Should be enabled once every field is specified
+            await componentHarness.setDateRange("10/1/2025", "10/31/2025");
+            isDisabled = await componentHarness.downloadIsDisabled();
+            expect(isDisabled).toBeFalse();
+        });
+
+        it("should disable the download button and show a spinner once the button is clicked and we're waiting for a server response", async () => {
+            // Specify the form inputs
+            let formInput = await componentHarness.currencyPairFormInput();
+            formInput.selectOptions(0);
+            formInput = await componentHarness.timeFrameFormInput();
+            formInput.selectOptions(0);
+            formInput = await componentHarness.pricingComponentsFormInput();
+            formInput.click();
+            await componentHarness.setDateRange("10/1/2025", "10/31/2025");
+
+            // Click the button and check its properties
+            await componentHarness.clickDownloadButton();
+            const isDisabled = await componentHarness.downloadIsDisabled();
+            expect(isDisabled).toBeTrue();
+            const hasSpinner = await componentHarness.downloadHasSpinner();
+            expect(hasSpinner).toBeTrue();
+        });
+
+        it("should only enable the save as csv button when there is candle data", async () => {
+            // The component starts with no data, so the button should be disabled
+            let isDisabled = await componentHarness.csvIsDisabled();
+            expect(isDisabled).toBeTrue();
+
+            // Add some data and make sure the button is no longer disabled
+            const candle = new Candle(true, 1000, new Date(Date.now()));
+            candleServiceSpy.candlesSignal.and.returnValue([candle]);
+            fixture.detectChanges();
+            isDisabled = await componentHarness.csvIsDisabled();
+            expect(isDisabled).toBeFalse();
+
+            // Remove the data and make sure the button is disabled again
+            candleServiceSpy.candlesSignal.and.returnValue([]);
+            fixture.detectChanges();
+            isDisabled = await componentHarness.csvIsDisabled();
+            expect(isDisabled).toBeTrue();
+        });
+
+        it("should show the proper table headers", async () => {
+            const tableRows = await componentHarness.getTableRows();
+            const headersText = await tableRows[0].text();
+            const expectedHeadersString =
+                "CompleteVolumeTimeBid OpenBid HighBid LowBid CloseMid OpenMid HighMid LowMid CloseAsk OpenAsk HighAsk LowAsk Close";
+            expect(headersText).toBe(expectedHeadersString);
+        });
+    });
+
+    describe("on successful downloads", () => {
+        it("should display candles in the table", async () => {
+            const candle = new Candle(true, 1000, new Date(Date.now()));
+            candleServiceSpy.candlesSignal.and.returnValue(Array(50).fill(candle));
+            fixture.detectChanges();
+            const numRows = await componentHarness.numRowsInTable();
+            expect(numRows).toBe(50);
+        });
+
+        it("should format candles in the table properly", async () => {
+            const candle = new Candle(
+                true,
+                1000,
+                new Date(Date.now()),
+                new Price(1.5, 1.501, 1.499, 1.5005)
+            );
+            candleServiceSpy.candlesSignal.and.returnValue([candle]);
+            const tableRows = await componentHarness.getTableRows();
+            const rowText = await tableRows[1].text();
+            const expectedDataString = `${candle.complete}${
+                candle.volume
+            }${candle.time.toISOString()}${candle.bid?.o ?? ""}${candle.bid?.h ?? ""}${
+                candle.bid?.l ?? ""
+            }${candle.bid?.c ?? ""}${candle.mid?.o ?? ""}${candle.mid?.h ?? ""}${
+                candle.mid?.l ?? ""
+            }${candle.mid?.c ?? ""}${candle.ask?.o ?? ""}${candle.ask?.h ?? ""}${
+                candle.ask?.l ?? ""
+            }${candle.ask?.c ?? ""}`;
+            expect(rowText).toBe(expectedDataString);
+        });
+
+        it("should display only up to 5000 candles in the table", async () => {
+            const candle = new Candle(true, 1000, new Date(Date.now()));
+            candleServiceSpy.candlesSignal.and.returnValue(Array(6000).fill(candle));
+            fixture.detectChanges();
+            const numRows = await componentHarness.numRowsInTable();
+            expect(numRows).toBe(5000);
+        });
+    });
 });
