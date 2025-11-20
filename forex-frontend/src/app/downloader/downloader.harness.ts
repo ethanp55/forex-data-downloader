@@ -97,6 +97,22 @@ export class DownloaderHarness extends ComponentHarness {
         );
     }
 
+    // Warning messages
+    private dataTooOldWarningMessage = this.locatorForOptional('[testid="data-too-old-warning"]');
+    private tooManyCandlesWarningMessage = this.locatorForOptional(
+        '[testid="too-many-candles-warning"]'
+    );
+
+    async dataTooOldWarningMessageExists() {
+        const warningMessage = await this.dataTooOldWarningMessage();
+        return !!warningMessage;
+    }
+
+    async tooManyCandlesWarningMessageExists() {
+        const warningMessage = await this.tooManyCandlesWarningMessage();
+        return !!warningMessage;
+    }
+
     // Buttons
     private downloadButton = this.locatorFor('[testid="download-button"]');
 

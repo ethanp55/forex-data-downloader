@@ -84,6 +84,39 @@ describe("Downloader", () => {
                 const allErrorMessages = await componentHarness.allErrorMessagesExist();
                 expect(allErrorMessages).toBeTrue();
             });
+
+            it("should show a date error if the start date is after the end date", async () => {
+                const dateHarness = await componentHarness.dateRangeFormInput();
+                const startInput = await dateHarness.getStartInput();
+                startInput.setValue("10/31/2025");
+                const endInput = await dateHarness.getEndInput();
+                await endInput.setValue("10/1/2025");
+                const errorMessageShown = await componentHarness.dateRangeErrorMessageExists();
+                expect(errorMessageShown).toBeTrue();
+            });
+
+            it("should show a date error if the dates are in the future", async () => {
+                // Set the end date to a year in the future and make sure there's an error
+                const currDate = new Date(Date.now());
+                const currDateString = `${currDate.getMonth()}/${currDate.getDate()}/${currDate.getFullYear()}`;
+                currDate.setFullYear(currDate.getFullYear() + 1);
+                const futureDateString = `${currDate.getMonth()}/${currDate.getDate()}/${currDate.getFullYear()}`;
+                currDate.setFullYear(currDate.getFullYear() - 2);
+                const startDateString = `${currDate.getMonth()}/${currDate.getDate()}/${currDate.getFullYear()}`;
+                const dateHarness = await componentHarness.dateRangeFormInput();
+                const startInput = await dateHarness.getStartInput();
+                startInput.setValue(startDateString);
+                const endInput = await dateHarness.getEndInput();
+                await endInput.setValue(futureDateString);
+                let errorMessageShown = await componentHarness.dateRangeErrorMessageExists();
+                expect(errorMessageShown).toBeTrue();
+
+                // Set the end date back to the current date and make sure the error is gone
+                startInput.setValue(startDateString);
+                await endInput.setValue(currDateString);
+                errorMessageShown = await componentHarness.dateRangeErrorMessageExists();
+                expect(errorMessageShown).toBeFalse();
+            });
         });
 
         describe("from the server", () => {
@@ -118,9 +151,38 @@ describe("Downloader", () => {
         });
     });
 
-    // Warnings:
-    // - Trying to download more than 5000 candles should display a warning
-    // - Trying to download old data should display a warning
+    describe("warning messages", () => {
+        it("should be displayed when downloading more than 5000 candles", async () => {
+            // Set the start and end dates
+            const currDate = new Date(Date.now());
+            const endDateString = `${currDate.getMonth()}/${currDate.getDate()}/${currDate.getFullYear()}`;
+            currDate.setMonth(currDate.getMonth() - 1);
+            const startDateString = `${currDate.getMonth()}/${currDate.getDate()}/${currDate.getFullYear()}`;
+            const dateHarness = await componentHarness.dateRangeFormInput();
+            const startInput = await dateHarness.getStartInput();
+            startInput.setValue(startDateString);
+            const endInput = await dateHarness.getEndInput();
+            endInput.setValue(endDateString);
+
+            // Set the time frame to one minute (index 8 in the dropdown select menu)
+            const granularityInput = await componentHarness.timeFrameFormInput();
+            await granularityInput.selectOptions(8);
+            const warningMessageShown = await componentHarness.tooManyCandlesWarningMessageExists();
+
+            expect(warningMessageShown).toBeTrue();
+        });
+
+        it("should be displayed when downloading data that is several years old", async () => {
+            const dateHarness = await componentHarness.dateRangeFormInput();
+            const startInput = await dateHarness.getStartInput();
+            startInput.setValue("10/1/1975");
+            const endInput = await dateHarness.getEndInput();
+            await endInput.setValue("10/31/1975");
+            const warningMessageShown = await componentHarness.dataTooOldWarningMessageExists();
+            expect(warningMessageShown).toBeTrue();
+        });
+    });
+
     // UI edge cases:
     // - Download button should be disabled before every field is specified
     // - Download button should be disabled and show spinning animation while waiting for the server to return data

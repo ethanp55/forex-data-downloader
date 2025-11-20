@@ -138,7 +138,7 @@
         </div>
 
         @if (yearsTooFarBack()) {
-        <span class="warning-message"
+        <span class="warning-message" testid="data-too-old-warning"
             ><strong>Warning:</strong> You are requesting data that is at least
             {{ numYearsBack }} years in the past.
             <br />
@@ -146,7 +146,7 @@
             <br />You might find that some or no data is downloaded/returned.
         </span>
         } @if (aLotOfCandles()) {
-        <span class="warning-message"
+        <span class="warning-message" testid="too-many-candles-warning"
             ><strong>Warning:</strong> You are requesting more than
             {{ oandaCandlesLimitation }} candles.
             <br />
